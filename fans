@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+import sys
+import time
+import pigpio
+
+target = float(sys.argv[1])
+
+fan_pin = 19
+frequency = 25000  # 25 kHz
+max_duty_cycle = 1000000  # from pigpiod
+
+
+def set_speed(speed):
+    pins = pigpio.pi()
+
+    message = "Set fan speed to " + str(speed * 100) + "%"
+    print(message)
+
+    speed = int(speed * max_duty_cycle)
+
+    pins.hardware_PWM(19, frequency, speed)
+
+
+if __name__ == "__main__":
+    if target != 0 and (target < 0.1 or target > 1):
+        print("Speed setting has to either 0 or between 0.1 and 1")
+    else:
+        set_speed(target)
+

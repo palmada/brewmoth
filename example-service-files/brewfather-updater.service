@@ -1,0 +1,9 @@
+[Unit]
+# Human readable name of the unit
+Description=Read temperatures and send to Brewfather
+
+[Service]
+ExecStart=/usr/bin/python3 /brewmoth/brewfather-updater.py
+
+[Install]
+WantedBy=multi-user.target
