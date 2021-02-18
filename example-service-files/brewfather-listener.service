@@ -1,0 +1,14 @@
+[Unit]
+Description=uWSGI instance to serve Brewfather Listener
+After=network.target
+
+[Service]
+User=palmada
+Group=www-data
+
+WorkingDirectory=/brewmoth/brewfather-endpoint
+Environment="PATH=/brewmoth/brewfather-endpoint/venv/bin"
+ExecStart=/brewmoth/brewfather-endpoint/venv/bin/uwsgi --ini listener-wsgi.ini
+
+[Install]
+WantedBy=multi-user.target
