@@ -19,7 +19,7 @@ if __name__ == '__main__':
     os.system('modprobe w1-gpio')
     os.system('modprobe w1-therm')
 
-    pid = PID(1, 0.1, 0.05, setpoint=target_temp)
+    pid = PID(0.5, -1, 0.0005, setpoint=target_temp)
 
     # Update every
     pid.sample_time = 5  # seconds
