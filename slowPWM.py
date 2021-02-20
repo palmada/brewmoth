@@ -11,12 +11,9 @@ if __name__ == '__main__':
     parser.add_argument('--duty_cycle', '-d', help='Set the PWM duty cycle as floating point number from 0 to 1')
     parser.add_argument('--frequency', '-f', help='Set the PWM frequency in hertz', default=0.3)
     parser.add_argument('--pump_direction', '-p',
-                        help='''
-                            Set the heat pump direction, either heating or cooling.
+                        help='''Set the heat pump direction, either heating or cooling.
                             1 - Cool
-                            2 - Heat
-                            '''
-                        , default=1)
+                            2 - Heat''', default=1)
 
     args = parser.parse_args()
 
@@ -42,17 +39,13 @@ if __name__ == '__main__':
         pin1 = 22
         pin2 = 25
 
-    pin1 = SlowPWM(pin1, frequency=frequency, duty_cycle=duty_cycle)
-    pin2 = SlowPWM(pin2, frequency=frequency, duty_cycle=duty_cycle)
+    pin = SlowPWM([pin1, pin2], frequency=frequency, duty_cycle=duty_cycle)
 
     try:
-        pin1.start()
-        pin2.start()
+        pin.start()
 
-        pin1.join()
-        pin2.join()
+        pin.join()
     finally:
-        pin1.on = False
-        pin2.on = False
+        pin.on = False
 
         sys.exit(0)
