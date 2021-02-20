@@ -33,13 +33,16 @@ if __name__ == '__main__':
     peltiers = PeltierControl(frequency=5)
 
     current_value = 0
+
+    print("Target temp:", pid.setpoint)
+
     try:
         while True:
             current_temp = read_temp(temp_file)
             peltier_duty_cycle = pid(current_temp)
 
             if peltier_duty_cycle != current_value:
-                print(timestamp(), peltier_duty_cycle, pid.components)
+                print(timestamp(), current_temp, peltier_duty_cycle, pid.components, sep=", ")
                 peltiers.start_pwm(peltier_duty_cycle)
                 current_value = peltier_duty_cycle
     except KeyboardInterrupt:
