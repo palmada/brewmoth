@@ -6,6 +6,7 @@ import pigpio
 pwm_range = 40000  # For our 25kHz PWM signal, the period is 40000 nanoseconds
 frequency = 10  # Hz
 
+
 def set_peltier_power(power):
     heat = power < 0
     power = abs(power)
@@ -62,4 +63,3 @@ if __name__ == "__main__":
         print("Peltier power set-point has to be between -1 and 1")
     else:
         set_peltier_power(target)
-

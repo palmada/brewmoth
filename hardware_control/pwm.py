@@ -1,7 +1,7 @@
 import time
 from threading import Thread
 
-from gpiozero import DigitalOutputDevice, CompositeDevice
+from gpiozero import DigitalOutputDevice
 from gpiozero.pins.pigpio import PiGPIOFactory
 
 
@@ -26,19 +26,24 @@ class SlowPWM(Thread):
         self.on = True
         self.daemon = True
 
-        pin_devices = []
+        self.pins = []
 
         for pin in pins:
-            pin_devices.append(DigitalOutputDevice(pin, pin_factory=SlowPWM.factory))
+            self.pins.append(DigitalOutputDevice(pin, pin_factory=SlowPWM.factory))
 
-        self.pins = CompositeDevice(*pin_devices)
+    def stop(self):
+        self.on = False
+
+        for pin in self.pins:
+            pin.close()
 
     def run(self) -> None:
         period = int((1 / self.frequency) * 1000000000)  # period in nanoseconds
         on_time = int(period * self.duty_cycle)  # duty_cycle in nanoseconds
 
         start = time.time_ns()
-        self.pins.on()
+        for pin in self.pins:
+            pin.on()
 
         turned_off = False
 
@@ -46,12 +51,14 @@ class SlowPWM(Thread):
             while self.on:
                 lapsed_time = time.time_ns() - start
                 if self.duty_cycle != 1 and not turned_off and lapsed_time >= on_time:
-                    self.pins.off()
+                    for pin in self.pins:
+                        pin.off()
                     turned_off = True
 
                 if lapsed_time >= period:
                     start = time.time_ns()
-                    self.pins.on()
+                    for pin in self.pins:
+                        pin.on()
                     turned_off = False
         finally:
-            self.pins.off()
+            self.stop()
