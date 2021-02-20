@@ -1,10 +1,11 @@
 import argparse
 import os
-from datetime import datetime
+
 from simple_pid import PID
 
 from hardware_control.peltier_control import PeltierControl
 from hardware_control.temperature_sensors import temp_file, read_temp
+from utilities.formatters import timestamp
 
 if __name__ == '__main__':
 
@@ -38,7 +39,7 @@ if __name__ == '__main__':
             peltier_duty_cycle = pid(current_temp)
 
             if peltier_duty_cycle != current_value:
-                print(datetime.now(), peltier_duty_cycle, pid.components)
+                print(timestamp(), peltier_duty_cycle, pid.components)
                 peltiers.start_pwm(peltier_duty_cycle)
                 current_value = peltier_duty_cycle
     except KeyboardInterrupt:

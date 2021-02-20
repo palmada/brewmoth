@@ -1,9 +1,10 @@
 import json
 import os
-from datetime import datetime
 
 from flask import Flask, request
 from flask_cors import CORS
+
+from utilities.formatters import timestamp
 
 BATCH_FOLDER = '/brewmoth/batches'
 ALLOWED_EXTENSIONS = {'txt', 'json'}
@@ -22,9 +23,7 @@ def save_post():
 
         if request.is_json:
             received_json = request.get_json()
-            now = datetime.now()
-            time_stamp = "{0}.{1}.{2}_{3}:{4}:{5}.batch".format(now.year, now.month, now.day, now.hour, now.minute,
-                                                                now.second)
+            time_stamp = timestamp() + ".batch"
             file = open(os.path.join(BATCH_FOLDER, time_stamp), "w")
             file.write(json.dumps(received_json))
             file.close()
