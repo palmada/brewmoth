@@ -46,5 +46,5 @@ class PeltierControl:
         else:
             self.pins = SlowPWM(cooling_pin_numbers, frequency=self.frequency)
 
-        self.pins.duty_cycle = duty_cycle
+        self.pins.duty_cycle = abs(duty_cycle)
         self.pins.start()
