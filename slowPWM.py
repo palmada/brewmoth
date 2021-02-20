@@ -3,14 +3,12 @@ import argparse
 import sys
 import time
 from threading import Thread
-from daemon import daemon
 
 from gpiozero import DigitalOutputDevice
 from gpiozero.pins.pigpio import PiGPIOFactory
 
 
 class SlowPWM(Thread):
-
     factory = PiGPIOFactory()
 
     def __init__(self, pin: int, frequency: float = 1, duty_cycle: float = 0.5):
@@ -61,30 +59,51 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--frequency', '-f', help='Set the PWM frequency')
-    parser.add_argument('--duty_cycle', '-d', help='Set the PWM duty cycle')
+    parser.add_argument('--duty_cycle', '-d', help='Set the PWM duty cycle as floating point number from 0 to 1')
+    parser.add_argument('--frequency', '-f', help='Set the PWM frequency in hertz', default=0.3)
+    parser.add_argument('--pump_direction', '-p',
+                        help='''
+                            Set the heat pump direction, either heating or cooling.
+                            1 - Cool
+                            2 - Heat
+                            '''
+                        , default=1)
 
     args = parser.parse_args()
 
     frequency = float(args.frequency)
     duty_cycle = float(args.duty_cycle)
+    direction = int(args.pump_direction)
 
-    # Cooling group
-    pin5 = SlowPWM(5, frequency=frequency, duty_cycle=duty_cycle)
-    pin27 = SlowPWM(27, frequency=frequency, duty_cycle=duty_cycle)
+    if direction is not 1 or not 2:
+        raise Exception("Wrong direction term, has to be either 1 or two, not " + args.pump_direction)
 
-    # Heating group
-    #  pin22 = SlowPWM(22, frequency=0.3)
-    #  pin25 = SlowPWM(25, frequency=0.3)
+    if not 0 <= duty_cycle <= 1:
+        raise Exception("Duty cycle has to be a floating point number from 0 and 1.")
+
+    if frequency >= 100:
+        raise Exception("Frequency has to be lower than 100 Hz. Use pigpio for faster frequencies.")
+
+    if direction is 1:
+        # Pins for cooling
+        pin1 = 5
+        pin2 = 27
+    else:
+        # Pins for heating
+        pin1 = 22
+        pin2 = 25
+
+    pin1 = SlowPWM(pin1, frequency=frequency, duty_cycle=duty_cycle)
+    pin2 = SlowPWM(pin2, frequency=frequency, duty_cycle=duty_cycle)
 
     try:
-        pin5.start()
-        pin27.start()
+        pin1.start()
+        pin2.start()
 
-        pin5.join()
-        pin27.join()
+        pin1.join()
+        pin2.join()
     finally:
-        pin5.on = False
-        pin27.on = False
+        pin1.on = False
+        pin2.on = False
 
         sys.exit(0)
