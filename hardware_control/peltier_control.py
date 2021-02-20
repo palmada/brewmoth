@@ -19,8 +19,12 @@ class PeltierControl:
         Stops the peltiers.
         """
         try:
-            self.pins.stop()
+            if self.pins is not None:
+                self.pins.stop()
+        except:
+            '''Ignore'''
         finally:
+            set_fan_speed(0)
             return
 
     def start_pwm(self, duty_cycle):
