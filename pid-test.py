@@ -22,7 +22,7 @@ if __name__ == '__main__':
     pid = PID(1, 0.1, 0.05, setpoint=target_temp)
 
     # Update every
-    pid.sample_time = 30  # seconds
+    pid.sample_time = 5  # seconds
 
     # Set the maximum range of peltier control
     pid.output_limits = (-1, 1)
