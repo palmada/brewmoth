@@ -23,6 +23,7 @@ if __name__ == '__main__':
         while True:
             read = timestamp() + "," + str(read_temp(temp_file)) + "," + str(read_temp(room_temp_file))
             print(read)
+            read += "\n"
             file.write(read)
             time.sleep(2)
     except KeyboardInterrupt:
