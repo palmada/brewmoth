@@ -18,8 +18,11 @@ class SlowPWM(Thread):
         """
         super().__init__()
 
-        assert 0 <= duty_cycle <= 1
-        assert frequency < 100
+        if not 0 <= duty_cycle <= 1:
+            raise ValueError("Duty cycle has to be between 0 and 1")
+
+        if frequency > 100:
+            raise ValueError("Frequency has to be less than 100Hz")
 
         self.duty_cycle = duty_cycle
         self.frequency = frequency
