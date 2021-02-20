@@ -4,6 +4,8 @@ from threading import Thread
 from gpiozero import DigitalOutputDevice
 from gpiozero.pins.pigpio import PiGPIOFactory
 
+pins_in_use = {}
+
 
 class SlowPWM(Thread):
     factory = PiGPIOFactory()
@@ -32,13 +34,19 @@ class SlowPWM(Thread):
         self.pins = []
 
         for pin in pins:
-            self.pins.append(DigitalOutputDevice(pin, pin_factory=SlowPWM.factory))
+            if pin not in pins_in_use:
+                pin_device = DigitalOutputDevice(pin, pin_factory=SlowPWM.factory)
+                pins_in_use[pin] = pin_device
+            else:
+                pin_device = pins_in_use[pin]
+
+            self.pins.append(pin_device)
 
     def stop(self):
         self.on = False
 
         for pin in self.pins:
-            pin.close()
+            pin.off()
 
     def run(self) -> None:
         period = int((1 / self.frequency) * 1000000000)  # period in nanoseconds
