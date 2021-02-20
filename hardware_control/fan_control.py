@@ -1,12 +1,16 @@
 import pigpio
 
+pins = pigpio.pi()
+
+if not pins.connected:
+    raise Exception("Could not connect to pigpio")
+
 fan_pin = 19
 frequency = 25000  # 25 kHz
 max_duty_cycle = 1000000  # from pigpiod
 
 
 def set_fan_speed(speed):
-    pins = pigpio.pi()
 
     if speed < 0.1:
         speed = 0.1
