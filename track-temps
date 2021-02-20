@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+
+import os
+import time
+from datetime import datetime
+
+from hardware_control.temperature_sensors import room_temp_file, temp_file, read_temp
+
+
+def time_stamp():
+    now = datetime.now()
+    return "{0}-{1}-{2} {3}:{4}:{5}".format(
+        now.year, now.month, now.day, now.hour, now.minute, now.second)
+
+
+if __name__ == '__main__':
+    os.system('modprobe w1-gpio')
+    os.system('modprobe w1-therm')
+
+    try:
+        while True:
+            print(time_stamp() + "," + str(read_temp(temp_file)) + "," + str(read_temp(room_temp_file)))
+            time.sleep(2)
+    except KeyboardInterrupt:
+        print("Exiting.")

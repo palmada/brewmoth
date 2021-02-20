@@ -1,11 +1,4 @@
-#!/usr/bin/env python3
-
-import os
 import time
-from datetime import datetime
-
-os.system('modprobe w1-gpio')
-os.system('modprobe w1-therm')
 
 base_dir = '/sys/bus/w1/devices/'
 room_temp_file = base_dir + '28-3c01b5566db7/w1_slave'
@@ -29,18 +22,3 @@ def read_temp(device_file):
         temp_string = lines[1][equals_pos + 2:]
         temp_c = float(temp_string) / 1000.0
         return temp_c
-
-
-def time_stamp():
-    now = datetime.now()
-    return "{0}-{1}-{2} {3}:{4}:{5}".format(
-        now.year, now.month, now.day, now.hour, now.minute, now.second)
-
-
-if __name__ == '__main__':
-    try:
-        while True:
-            print(time_stamp() + "," + str(read_temp(temp_file)) + "," + str(read_temp(room_temp_file)))
-            time.sleep(2)
-    except KeyboardInterrupt:
-        print("Exiting.")
