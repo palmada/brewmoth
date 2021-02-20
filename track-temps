@@ -2,6 +2,7 @@
 
 import os
 import time
+from pathlib import Path
 
 from hardware_control.temperature_sensors import room_temp_file, temp_file, read_temp
 from utilities.formatters import timestamp
@@ -13,6 +14,8 @@ if __name__ == '__main__':
     print("Time, Temp, Room temp")
 
     READS_FOLDER = '/brewmoth/temp-reads'
+
+    Path(READS_FOLDER).mkdir(parents=True, exist_ok=True)
 
     file = open(os.path.join(READS_FOLDER, timestamp() + ".csv"), "w")
 
