@@ -1,10 +1,14 @@
+#!/usr/bin/env python
 import argparse
 import os
+from pathlib import Path
 
 from simple_pid import PID
 
-from hardware_control.peltier_control import PeltierControl
-from hardware_control.temperature_sensors import temp_file, read_temp
+from hardware_control.peltier_control import SoftwarePeltierControl
+from hardware_control.slow_pwm import SlowPWM
+from hardware_control.temperature_sensors import temp_file, read_temp, room_temp_file
+from utilities.constants import READS_FOLDER
 from utilities.formatters import timestamp
 
 if __name__ == '__main__':
@@ -22,30 +26,43 @@ if __name__ == '__main__':
     pid = PID(0.5, 1, 0.0005, setpoint=target_temp)
 
     # Update every
-    pid.sample_time = 5  # seconds
+    pid.sample_time = 30  # seconds
 
     # Set the maximum range of peltier control
-    pid.output_limits = (-1, 1)
+    pid.output_limits = (-1, 0)  # (-1, 0) means cooling only since there is something wrong when heating
 
     # Assuming temperature control is an  integrating process, this helps prevent overshoot
     pid.proportional_on_measurement = True
 
-    peltiers = PeltierControl(frequency=5)
+    peltiers = SoftwarePeltierControl(frequency=0.2)
 
     current_value = 0
 
     print("Target temp:", pid.setpoint)
+    print("Timestamp, Temperature, Room Temperature, PID output, Kp, Ki, Kd")
+
+    Path(READS_FOLDER).mkdir(parents=True, exist_ok=True)
+
+    file = open(os.path.join(READS_FOLDER, timestamp() + ".pid.csv"), "w")
 
     try:
         while True:
             current_temp = read_temp(temp_file)
+            room_temp = read_temp(room_temp_file)
             peltier_duty_cycle = pid(current_temp)
 
             if peltier_duty_cycle != current_value:
-                print(timestamp(), current_temp, peltier_duty_cycle, pid.components, sep=", ")
-                peltiers.start_pwm(peltier_duty_cycle)
+                peltiers.set_pwm(peltier_duty_cycle)
                 current_value = peltier_duty_cycle
+
+                read = "{0}, {1}, {2}, {3}, {4}, {5}, {6}".format(timestamp(), current_temp, room_temp,
+                                                                  peltier_duty_cycle, *pid.components)
+                print(read)
+                read += '\n'
+                file.write(read)
+
     except KeyboardInterrupt:
-        print("Exiting.")
+        print("\nTest stopped.")
     finally:
-        peltiers.stop()
+        peltiers.kill()
+        file.close()

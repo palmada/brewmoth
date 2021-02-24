@@ -1,60 +1,7 @@
 #!/usr/bin/env python
-import os
 import sys
-import pigpio
 
-pwm_range = 40000  # For our 25kHz PWM signal, the period is 40000 nanoseconds
-frequency = 10  # Hz
-
-
-def set_peltier_power(power):
-    heat = power < 0
-    power = abs(power)
-    if power == 0:
-        message = "echo Turning off Peltiers"
-    else:
-        message = "echo Set Peltier power to "
-        if heat:
-            message += "heat"
-        else:
-            message += "cool"
-        message += " at " + str(power * 100) + "% power."
-    os.system(message)
-
-    power = int(power * pwm_range)
-
-    pins = pigpio.pi()
-
-    pins.set_PWM_range(5, pwm_range)
-    pins.set_PWM_range(22, pwm_range)
-    pins.set_PWM_range(25, pwm_range)
-    pins.set_PWM_range(27, pwm_range)
-
-    pins.set_PWM_frequency(5, frequency)
-    pins.set_PWM_frequency(22, frequency)
-    pins.set_PWM_frequency(25, frequency)
-    pins.set_PWM_frequency(27, frequency)
-
-    if power == 0:
-        pins.set_PWM_dutycycle(5, 0)
-        pins.set_PWM_dutycycle(27, 0)
-        pins.set_PWM_dutycycle(22, 0)
-        pins.set_PWM_dutycycle(25, 0)
-
-    elif heat:
-        # It's important to first turn off the other gates
-        pins.set_PWM_dutycycle(5, 0)
-        pins.set_PWM_dutycycle(27, 0)
-
-        pins.set_PWM_dutycycle(22, power)
-        pins.set_PWM_dutycycle(25, power)
-    else:  # Will cool
-        pins.set_PWM_dutycycle(22, 0)
-        pins.set_PWM_dutycycle(25, 0)
-
-        pins.set_PWM_dutycycle(5, power)
-        pins.set_PWM_dutycycle(27, power)
-
+from hardware_control.peltier_control import set_hw_pwm_peltier_control
 
 if __name__ == "__main__":
     target = float(sys.argv[1])
@@ -62,4 +9,4 @@ if __name__ == "__main__":
     if target < -1 or target > 1:
         print("Peltier power set-point has to be between -1 and 1")
     else:
-        set_peltier_power(target)
+        set_hw_pwm_peltier_control(target)

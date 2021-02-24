@@ -2,7 +2,8 @@
 import argparse
 import sys
 
-from hardware_control.pwm import SlowPWM
+from hardware_control.peltier_control import SoftwarePeltierControl
+from hardware_control.slow_pwm import SlowPWM
 
 if __name__ == '__main__':
 
@@ -12,8 +13,8 @@ if __name__ == '__main__':
     parser.add_argument('--frequency', '-f', help='Set the PWM frequency in hertz', default=0.3)
     parser.add_argument('--pump_direction', '-p',
                         help='''Set the heat pump direction, either heating or cooling.
-                            1 - Cool
-                            2 - Heat''', default=1)
+                            -1 - Cool
+                            1 - Heat''', default=-1)
 
     args = parser.parse_args()
 
@@ -21,8 +22,8 @@ if __name__ == '__main__':
     duty_cycle = float(args.duty_cycle)
     direction = int(args.pump_direction)
 
-    if direction is not 1 or not 2:
-        raise Exception("Wrong direction term, has to be either 1 or two, not " + args.pump_direction)
+    if direction is not -1 and not 1:
+        raise Exception("Wrong direction term, has to be either 1 or -1, not: " + args.pump_direction)
 
     if not 0 <= duty_cycle <= 1:
         raise Exception("Duty cycle has to be a floating point number from 0 and 1.")
@@ -30,22 +31,25 @@ if __name__ == '__main__':
     if frequency >= 100:
         raise Exception("Frequency has to be lower than 100 Hz. Use pigpio for faster frequencies.")
 
-    if direction is 1:
-        # Pins for cooling
-        pin1 = 5
-        pin2 = 27
-    else:
-        # Pins for heating
-        pin1 = 22
-        pin2 = 25
+    print("Will perform pwm test at", frequency, "Hz with a duty cycle of", duty_cycle)
 
-    pin = SlowPWM([pin1, pin2], frequency=frequency, duty_cycle=duty_cycle)
+    if direction is -1:
+        # Pins for cooling
+        print("Will cool.")
+        pins = SoftwarePeltierControl.cooling_pin_numbers
+    else:
+        print("Will heat")
+        # Pins for heating
+        pins = SoftwarePeltierControl.heating_pin_numbers
+
+    pin_control_thread = SlowPWM(pins, frequency=frequency, duty_cycle=duty_cycle)
 
     try:
-        pin.start()
+        pin_control_thread.start()
 
-        pin.join()
+        pin_control_thread.join()
+    except KeyboardInterrupt:
+        print("\nExiting.")
     finally:
-        pin.on = False
-
+        pin_control_thread.kill()
         sys.exit(0)

@@ -61,4 +61,4 @@ if __name__ == '__main__':
             except:
                 print("Error")
     except KeyboardInterrupt:
-        print("Exiting.")
+        print("\nExiting.")
