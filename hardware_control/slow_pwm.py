@@ -1,14 +1,13 @@
 import time
 from threading import Thread
 
-from gpiozero import DigitalOutputDevice
+from gpiozero import OutputDevice
 from gpiozero.pins.pigpio import PiGPIOFactory
-
-pins_in_use = {}
 
 
 class SlowPWM(Thread):
     factory = PiGPIOFactory()
+    pins_in_use = {}
 
     def __init__(self, pins: list, frequency: float = 1, duty_cycle: float = 0.5):
         """
@@ -29,47 +28,66 @@ class SlowPWM(Thread):
         self.duty_cycle = duty_cycle
         self.frequency = frequency
         self.on = True
-        self.daemon = True
+        self.daemon = True  # TODO: is this needed?
 
         self.pins = []
 
-        for pin in pins:
-            if pin not in pins_in_use:
-                pin_device = DigitalOutputDevice(pin, pin_factory=SlowPWM.factory)
-                pins_in_use[pin] = pin_device
+        for pin_number in pins:
+            if pin_number not in self.pins_in_use:
+                pin_device = OutputDevice(pin_number,
+                                          pin_factory=SlowPWM.factory,
+                                          active_high=True,
+                                          initial_value=False)
+                self.pins_in_use[pin_number] = pin_device
             else:
-                pin_device = pins_in_use[pin]
+                pin_device = self.pins_in_use[pin_number]
 
             self.pins.append(pin_device)
 
     def stop(self):
+        """
+        This stops the slow PWM control and sets the pin output to off.
+        """
         self.on = False
 
         for pin in self.pins:
             pin.off()
 
     def run(self) -> None:
+        """
+        SlowPWM is implemented as a thread and this is the function that gets called when
+        the thread gets started.
+        """
         period = int((1 / self.frequency) * 1000000000)  # period in nanoseconds
         on_time = int(period * self.duty_cycle)  # duty_cycle in nanoseconds
 
-        start = time.time_ns()
-        for pin in self.pins:
-            pin.on()
-
         turned_off = False
+
+        start = time.time_ns()
+        if self.duty_cycle > 0:
+            for pin in self.pins:
+                pin.on()
+        else:
+            turned_off = True
 
         try:
             while self.on:
-                lapsed_time = time.time_ns() - start
-                if self.duty_cycle != 1 and not turned_off and lapsed_time >= on_time:
+                time_lapsed_since_start = time.time_ns() - start
+
+                if not 0 <= self.duty_cycle <= 1:
+                    raise ValueError("Duty cycle was set incorrectly. "
+                                     "It has to be between 0 and 1, not " + str(self.duty_cycle))
+
+                if self.duty_cycle != 1 and not turned_off and time_lapsed_since_start >= on_time:
                     for pin in self.pins:
                         pin.off()
                     turned_off = True
 
-                if lapsed_time >= period:
+                if self.duty_cycle != 0 and turned_off and time_lapsed_since_start >= period:
                     start = time.time_ns()
                     for pin in self.pins:
                         pin.on()
                     turned_off = False
+
         finally:
             self.stop()
