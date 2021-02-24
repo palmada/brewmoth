@@ -1,0 +1,1 @@
+READS_FOLDER = '/brewmoth/temp-reads'
