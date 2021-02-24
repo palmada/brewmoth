@@ -12,7 +12,10 @@ max_duty_cycle = 1000000  # from pigpiod
 
 def set_fan_speed(speed):
 
-    if speed < 0.1:
+    if speed < 0:
+        speed = 0
+
+    if 0 < speed < 0.1:
         speed = 0.1
 
     if speed > 1:
