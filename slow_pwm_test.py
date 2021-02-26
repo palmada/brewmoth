@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from hardware_control.peltier_control import SoftwarePeltierControl
+from hardware_control.peltier_control import SoftwarePeltierPWMControl
 from hardware_control.slow_pwm import SlowPWM
 
 if __name__ == '__main__':
@@ -36,11 +36,11 @@ if __name__ == '__main__':
     if direction is -1:
         # Pins for cooling
         print("Will cool.")
-        pins = SoftwarePeltierControl.cooling_pin_numbers
+        pins = SoftwarePeltierPWMControl.cooling_pin_numbers
     else:
         print("Will heat")
         # Pins for heating
-        pins = SoftwarePeltierControl.heating_pin_numbers
+        pins = SoftwarePeltierPWMControl.heating_pin_numbers
 
     pin_control_thread = SlowPWM(pins, frequency=frequency, duty_cycle=duty_cycle)
 

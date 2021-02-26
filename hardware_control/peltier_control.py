@@ -1,13 +1,71 @@
 # Pins for cooling
 import os
+from enum import Enum
 
 import pigpio
 
 from hardware_control.fan_control import set_fan_speed
 from hardware_control.slow_pwm import SlowPWM
 
+pin_control = pigpio.pi()
 
-class SoftwarePeltierControl:
+
+class SoftwarePeltierDirectControl:
+    # Pins for cooling
+    cooling_pin_numbers = [5, 27]
+
+    # Pins for heating
+    heating_pin_numbers = [22, 25]
+
+    class State(Enum):
+        HEAT = 1
+        COOL = -1
+        OFF = 0
+
+    def __init__(self, control_fans: bool):
+        self.set_fans = control_fans
+
+    def stop(self):
+        """
+        Turns off peltiers.
+        """
+        for pin in self.cooling_pin_numbers:
+            pin_control.write(pin, 0)
+
+        for pin in self.heating_pin_numbers:
+            pin_control.write(pin, 0)
+
+        if self.set_fans:
+            set_fan_speed(0)
+
+    def set_state(self, state: State):
+        """
+        Starts, stops or modifies the pwm control of the peltiers.
+
+        :param state: Set state to heat, cool or off
+        """
+
+        if state is self.State.OFF:
+            self.stop()
+        else:
+            if self.set_fans:
+                set_fan_speed(0.4)
+
+            if state is self.State.HEAT:
+                for pin in self.cooling_pin_numbers:
+                    pin_control.write(pin, 0)
+
+                for pin in self.heating_pin_numbers:
+                    pin_control.write(pin, 1)
+            else:
+                for pin in self.cooling_pin_numbers:
+                    pin_control.write(pin, 1)
+
+                for pin in self.heating_pin_numbers:
+                    pin_control.write(pin, 0)
+
+
+class SoftwarePeltierPWMControl:
     # Pins for cooling
     cooling_pin_numbers = [5, 27]
 
@@ -61,7 +119,7 @@ class SoftwarePeltierControl:
             self.stop()
             return
         else:
-            set_fan_speed(duty_cycle)
+            set_fan_speed(0.4)
 
         if heat:
             self.cooling_pins_control.duty_cycle = 0
@@ -92,34 +150,32 @@ def set_hw_pwm_peltier_control(power):
 
     power = int(power * pwm_range)
 
-    pins = pigpio.pi()
+    pin_control.set_PWM_range(SoftwarePeltierPWMControl.cooling_pin_numbers[0], pwm_range)
+    pin_control.set_PWM_range(SoftwarePeltierPWMControl.cooling_pin_numbers[1], pwm_range)
+    pin_control.set_PWM_range(SoftwarePeltierPWMControl.heating_pin_numbers[0], pwm_range)
+    pin_control.set_PWM_range(SoftwarePeltierPWMControl.heating_pin_numbers[1], pwm_range)
 
-    pins.set_PWM_range(SoftwarePeltierControl.cooling_pin_numbers[0], pwm_range)
-    pins.set_PWM_range(SoftwarePeltierControl.cooling_pin_numbers[1], pwm_range)
-    pins.set_PWM_range(SoftwarePeltierControl.heating_pin_numbers[0], pwm_range)
-    pins.set_PWM_range(SoftwarePeltierControl.heating_pin_numbers[1], pwm_range)
-
-    pins.set_PWM_frequency(SoftwarePeltierControl.cooling_pin_numbers[0], frequency)
-    pins.set_PWM_frequency(SoftwarePeltierControl.cooling_pin_numbers[1], frequency)
-    pins.set_PWM_frequency(SoftwarePeltierControl.heating_pin_numbers[0], frequency)
-    pins.set_PWM_frequency(SoftwarePeltierControl.heating_pin_numbers[1], frequency)
+    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.cooling_pin_numbers[0], frequency)
+    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.cooling_pin_numbers[1], frequency)
+    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.heating_pin_numbers[0], frequency)
+    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.heating_pin_numbers[1], frequency)
 
     if power == 0:
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.cooling_pin_numbers[0], 0)
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.cooling_pin_numbers[1], 0)
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.heating_pin_numbers[0], 0)
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.heating_pin_numbers[1], 0)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.cooling_pin_numbers[0], 0)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.cooling_pin_numbers[1], 0)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.heating_pin_numbers[0], 0)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.heating_pin_numbers[1], 0)
 
     elif heat:
         # It's important to first turn off the other gates
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.cooling_pin_numbers[0], 0)
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.cooling_pin_numbers[1], 0)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.cooling_pin_numbers[0], 0)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.cooling_pin_numbers[1], 0)
 
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.heating_pin_numbers[0], power)
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.heating_pin_numbers[1], power)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.heating_pin_numbers[0], power)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.heating_pin_numbers[1], power)
     else:  # Will cool
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.heating_pin_numbers[0], 0)
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.heating_pin_numbers[1], 0)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.heating_pin_numbers[0], 0)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.heating_pin_numbers[1], 0)
 
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.cooling_pin_numbers[0], power)
-        pins.set_PWM_dutycycle(SoftwarePeltierControl.cooling_pin_numbers[1], power)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.cooling_pin_numbers[0], power)
+        pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.cooling_pin_numbers[1], power)

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from simple_pid import PID
 
-from hardware_control.peltier_control import SoftwarePeltierControl
+from hardware_control.peltier_control import SoftwarePeltierPWMControl
 from hardware_control.slow_pwm import SlowPWM
 from hardware_control.temperature_sensors import temp_file, read_temp, room_temp_file
 from utilities.constants import READS_FOLDER
@@ -23,7 +23,10 @@ if __name__ == '__main__':
     os.system('modprobe w1-gpio')
     os.system('modprobe w1-therm')
 
-    pid = PID(0.5, 1, 0.0005, setpoint=target_temp)
+    # pid = PID(0.7, 130, 70, setpoint=target_temp) 21:38 on feb 23
+    # pid = PID(0.6, 0.005, 40, setpoint=target_temp)
+    # pid = PID(4.154, 0.0155, 276, setpoint=target_temp) # 22:23 on feb 24 untested
+    pid = PID(1.65, 0.00407, 145.2, setpoint=target_temp) # 22:23 on feb 24 tested alternative
 
     # Update every
     pid.sample_time = 30  # seconds
@@ -34,7 +37,7 @@ if __name__ == '__main__':
     # Assuming temperature control is an  integrating process, this helps prevent overshoot
     pid.proportional_on_measurement = True
 
-    peltiers = SoftwarePeltierControl(frequency=0.2)
+    peltiers = SoftwarePeltierPWMControl(frequency=0.2)
 
     current_value = 0
 
