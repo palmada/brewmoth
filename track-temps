@@ -2,6 +2,7 @@
 
 import os
 import time
+from datetime import datetime
 from pathlib import Path
 
 from hardware_control.temperature_sensors import room_temp_file, temp_file, read_temp
@@ -19,12 +20,17 @@ if __name__ == '__main__':
     file = open(os.path.join(READS_FOLDER, timestamp() + ".csv"), "w")
 
     try:
+        next_read = time.time()
         while True:
-            read = timestamp() + ", " + str(read_temp(temp_file)) + ", " + str(read_temp(room_temp_file))
-            print(read)
-            read += "\n"
-            file.write(read)
-            time.sleep(2)
+            current_time = time.time()
+
+            if current_time > next_read:
+                read = timestamp() + ", " + str(read_temp(temp_file)) + ", " + str(read_temp(room_temp_file))
+                print(read)
+                read += "\n"
+                file.write(read)
+                next_read = current_time + 5
+
     except KeyboardInterrupt:
         print("Exiting.")
     finally:
