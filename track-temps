@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-
+import argparse
 import os
 import time
-from datetime import datetime
 from pathlib import Path
 
 from hardware_control.temperature_sensors import room_temp_file, temp_file, read_temp
@@ -10,6 +9,13 @@ from utilities.constants import READS_FOLDER
 from utilities.formatters import timestamp
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--frequency', '-f', help='How often to read temps in seconds', default=5)
+
+    args = parser.parse_args()
+    frequency = float(args.frequency)
+
     os.system('modprobe w1-gpio')
     os.system('modprobe w1-therm')
 
@@ -29,7 +35,7 @@ if __name__ == '__main__':
                 print(read)
                 read += "\n"
                 file.write(read)
-                next_read = current_time + 5
+                next_read = current_time + frequency
 
     except KeyboardInterrupt:
         print("Exiting.")
