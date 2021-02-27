@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+
+import requests
+
+from utilities.constants import CLI_GET_TEMP, CLI_FRIDGE, CLI_ROOM, CLI_URL
+
+if __name__ == "__main__":
+
+    req = requests.post(CLI_URL, json=CLI_GET_TEMP)
+
+    try:
+        temps = req.json()
+
+        print("Fridge:", str(temps[CLI_FRIDGE]) + ", Room:", temps[CLI_ROOM])
+    except Exception as e:
+        print("Error trying to get temperatures:", str(e))
