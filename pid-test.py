@@ -6,8 +6,7 @@ from pathlib import Path
 from simple_pid import PID
 
 from hardware_control.peltier_control import SoftwarePeltierPWMControl
-from hardware_control.slow_pwm import SlowPWM
-from hardware_control.temperature_sensors import temp_file, read_temp, room_temp_file
+from hardware_control.temperature_sensors import TEMP_FILE, read_temp, ROOM_TEMP_FILE
 from utilities.constants import READS_FOLDER
 from utilities.formatters import timestamp
 
@@ -50,8 +49,8 @@ if __name__ == '__main__':
 
     try:
         while True:
-            current_temp = read_temp(temp_file)
-            room_temp = read_temp(room_temp_file)
+            current_temp = read_temp(TEMP_FILE)
+            room_temp = read_temp(ROOM_TEMP_FILE)
             peltier_duty_cycle = pid(current_temp)
 
             if peltier_duty_cycle != current_value:

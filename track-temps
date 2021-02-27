@@ -4,7 +4,7 @@ import os
 import time
 from pathlib import Path
 
-from hardware_control.temperature_sensors import room_temp_file, temp_file, read_temp
+from hardware_control.temperature_sensors import ROOM_TEMP_FILE, TEMP_FILE, read_temp
 from utilities.constants import READS_FOLDER
 from utilities.formatters import timestamp
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
             current_time = time.time()
 
             if current_time > next_read:
-                read = timestamp() + ", " + str(read_temp(temp_file)) + ", " + str(read_temp(room_temp_file))
+                read = timestamp() + ", " + str(read_temp(TEMP_FILE)) + ", " + str(read_temp(ROOM_TEMP_FILE))
                 print(read)
                 read += "\n"
                 file.write(read)

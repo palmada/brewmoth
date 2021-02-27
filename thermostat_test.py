@@ -6,7 +6,7 @@ from pathlib import Path
 
 from hardware_control.fan_control import set_fan_speed
 from hardware_control.peltier_control import SoftwarePeltierDirectControl
-from hardware_control.temperature_sensors import temp_file, read_temp, room_temp_file
+from hardware_control.temperature_sensors import TEMP_FILE, read_temp, ROOM_TEMP_FILE
 from utilities.constants import READS_FOLDER
 from utilities.formatters import timestamp
 
@@ -15,7 +15,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--temperature', '-t', help='Target temperature', default=15)
-    parser.add_argument('--tolerance', '-to', help='Allowed temperature deviation', default=0.15)
+    parser.add_argument('--tolerance', '-to', help='Allowed temperature deviation', default=0.10)
     parser.add_argument('--sampling', '-s', help='How often to sample', default=5)
 
     args = parser.parse_args()
@@ -46,8 +46,8 @@ if __name__ == '__main__':
             current_time = time.time()
 
             if current_time > next_read:
-                current_temp = read_temp(temp_file)
-                room_temp = read_temp(room_temp_file)
+                current_temp = read_temp(TEMP_FILE)
+                room_temp = read_temp(ROOM_TEMP_FILE)
 
                 if not target_temp - tolerance <= current_temp <= target_temp + tolerance:
                     if current_temp > target_temp:

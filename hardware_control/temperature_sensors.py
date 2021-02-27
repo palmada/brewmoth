@@ -1,8 +1,8 @@
 import time
 
-base_dir = '/sys/bus/w1/devices/'
-room_temp_file = base_dir + '28-3c01b5566db7/w1_slave'
-temp_file = base_dir + '28-3c01b556f57f/w1_slave'
+BASE_DIR = '/sys/bus/w1/devices/'
+ROOM_TEMP_FILE = BASE_DIR + '28-3c01b5566db7/w1_slave'
+TEMP_FILE = BASE_DIR + '28-3c01b556f57f/w1_slave'
 
 
 def read_temp_raw(device_file):
