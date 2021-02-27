@@ -1,16 +1,41 @@
 #!/usr/bin/env python3
+import argparse
+import traceback
+from json.decoder import JSONDecodeError
 
 import requests
 
-from utilities.constants import CLI_GET_TEMP, CLI_FRIDGE, CLI_ROOM, CLI_URL
+from utilities.constants import *
 
 if __name__ == "__main__":
 
-    req = requests.post(CLI_URL, json=CLI_GET_TEMP)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("temp", nargs='?', help="Temperature to set the fridge to in Celsius, or off to turn off.")
+    parser.add_argument("-v", "--verbose", help="Print full exception stack trace.", action='store_true')
+    parser.add_argument("-r", "--record", help="Tell thermostat to store changes to the peltiers on disk.", action='store_true')
+    args = parser.parse_args()
 
     try:
-        temps = req.json()
+        if args.temp == "off":
+            response = requests.post(CLI_URL, json=CLI_OFF)
+            print(response.content.decode("utf-8"))
+        elif args.temp:
+            temp = float(args.temp)
+            command = {
+                CLI_SET_TEMP: temp,
+                CLI_RECORD: args.record
+            }
+            response = requests.post(CLI_URL, json=command)
+            print(response.content.decode("utf-8"))
+        else:
+            response = requests.post(CLI_URL, json=CLI_GET_TEMP)
+            try:
+                temps = response.json()
+                print("Fridge: ", temps[CLI_FRIDGE], ", Room: ", temps[CLI_ROOM], sep="")
+            except JSONDecodeError as e:
+                print("ERROR: Response was: " + response.content.decode("utf-8"))
 
-        print("Fridge:", str(temps[CLI_FRIDGE]) + ", Room:", temps[CLI_ROOM])
     except Exception as e:
-        print("Error trying to get temperatures:", str(e))
+        print("Error:", str(e))
+        if args.verbose:
+            traceback.print_exc(e)

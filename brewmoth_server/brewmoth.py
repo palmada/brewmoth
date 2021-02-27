@@ -3,12 +3,14 @@ import os
 
 from flask import Flask, request
 from flask_cors import CORS
+# noinspection PyUnresolvedReferences
+from systemd import journal
 
+from brewmoth_server.brewfather import BrewFatherUpdater
 from hardware_control.temperature_sensors import *
 from hardware_control.thermostat import Thermostat
-from utilities.formatters import timestamp
 from utilities.constants import *
-from brewmoth_server.brewfather import BrewFatherUpdater
+from utilities.formatters import timestamp
 
 BATCH_FOLDER = MOTH_LOCATION + 'batches'
 ALLOWED_EXTENSIONS = {'txt', 'json'}
@@ -16,21 +18,10 @@ ALLOWED_EXTENSIONS = {'txt', 'json'}
 app = Flask(__name__)
 CORS(app)
 
-
-class Brewmoth:
-
-    def __init__(self):
-        if not os.path.exists(BATCH_FOLDER):
-            os.makedirs(BATCH_FOLDER)
-
-        self.thermostat: Thermostat
-
-
-moth = Brewmoth()
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+# noinspection PyTypeChecker
+thermostat = Thermostat(record=True)
+updater = BrewFatherUpdater()
+updater.start()
 
 
 @app.route("/brewfather", methods=['GET', 'POST'])
@@ -53,43 +44,50 @@ def save_post():
 @app.route('/cli', methods=['GET', 'POST'])
 def hello():
     try:
+        global thermostat
         if request.method == 'POST':
-            data = request.get_json()
+            data: dict = request.get_json()
 
             if CLI_SET_TEMP in data:
                 set_point = data[CLI_SET_TEMP]
+                record = bool(data[CLI_RECORD])
 
-                if set_point is CLI_OFF and moth.thermostat is not None:
-                    moth.thermostat.alive = False
-                    moth.thermostat = None
+                journal.write("Received:" + str(data))
+
+                try:
+                    set_point = float(set_point)
+                except ValueError:
+                    return "Error parsing requested temperature"
+
+                thermostat.target_temp = set_point
+                thermostat.record = record
+
+                if not thermostat.on:
+                    thermostat.set_state(True)
+                    return "Set temperature control to " + str(set_point)
                 else:
-                    try:
-                        set_point = float(set_point)
-                    except ValueError:
-                        return "Error parsing requested temperature"
-
-                    if moth.thermostat is None:
-                        moth.thermostat = Thermostat(target=set_point)
-                        moth.thermostat.start()
-                    else:
-                        moth.thermostat.target_temp = set_point
+                    return "Changed temperature set point to " + str(set_point)
 
             elif data == CLI_GET_TEMP:
                 return {
                     CLI_FRIDGE: read_temp(TEMP_FILE),
                     CLI_ROOM: read_temp(ROOM_TEMP_FILE)
                 }
+            elif data == CLI_OFF:
+                if thermostat.on:
+                    thermostat.set_state(False)
+                    return "Turned off temperature control."
+                else:
+                    return "Was asked to turn off, but temperature control is already off."
             else:
-                return "Got: " + data
+                return "Got the following post: " + str(data) + ", but don't know what to do with it."
 
         else:
-            return "Not a post"
+            return "Not a correct post"
 
     except Exception as e:
         return "Exception: " + str(e)
 
 
 if __name__ == "__main__":
-    updater = BrewFatherUpdater()
-    updater.start()
     app.run(host='0.0.0.0')

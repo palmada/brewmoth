@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 
 from hardware_control.peltier_control import set_hw_pwm_peltier_control
