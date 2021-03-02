@@ -1,0 +1,11 @@
+[Unit]
+# Human readable name of the unit
+Description=service for the thermostat thread controlling Brewmoth temperature
+
+[Service]
+WorkingDirectory=/brewmoth/
+Environment="PATH=/brewmoth/brewvenv/bin"
+ExecStart=/brewmoth/brewvenv/bin/python3 /brewmoth/thermostat_daemon.py
+
+[Install]
+WantedBy=multi-user.target

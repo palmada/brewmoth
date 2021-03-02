@@ -1,60 +1,125 @@
-import os
+import json
 import time
-from pathlib import Path
-from typing import TextIO
+import traceback
+from json.decoder import JSONDecodeError
+from multiprocessing import Process
 
 # noinspection PyUnresolvedReferences
 from systemd import journal
-from multiprocessing import Process
 
 from hardware_control.fan_control import set_fan_speed
 from hardware_control.peltier_control import SoftwarePeltierDirectControl
-from hardware_control.temperature_sensors import read_temp, TEMP_FILE, ROOM_TEMP_FILE
-from utilities.constants import READS_FOLDER
-from utilities.formatters import timestamp
+from hardware_control.temperature_sensors import read_temp, TEMP_FILE
+from utilities.constants import *
+
+
+def read_settings_file():
+    attempts = 20
+    while attempts > 0:
+        try:
+            with open(SET_POINT_FILE, 'a+') as set_point_file:
+                set_point_file.seek(0)
+                if set_point_file:
+                    settings_string = set_point_file.read()
+                    if len(settings_string) < 1:
+                        continue
+                    return json.loads(settings_string)
+        except (JSONDecodeError, TypeError):
+            raise TypeError("File contents not parseable to JSON")
+        finally:
+            attempts -= 1
+    raise IOError("Could not read settings file")
+
+
+def write_to_settings_file(settings):
+    attempts = 20
+    while attempts > 0:
+        try:
+            # Trick to check the file is not open elsewhere
+            with open(SET_POINT_FILE, 'w+') as set_point_file:
+                set_point_file.seek(0)
+                set_point_file.write(json.dumps(settings, indent=2))
+                set_point_file.truncate()
+                return
+        finally:
+            attempts -= 1
+
+    raise IOError("Could not write to settings file")
 
 
 class Thermostat:
 
-    def __init__(self, target: float = 18.0, tolerance: float = 0.1, sampling: int = 5, record=False):
-        super().__init__()
-        self.target_temp = target  # Celsius
-        self.tolerance = tolerance  # Celsius
-        self.sampling = sampling  # Seconds
-        self.alive = True
-        self.record = record
-        self.on = False
+    def __init__(self):
+        with open(SET_POINT_FILE, 'r') as set_point_file:
+            settings = json.load(set_point_file)
 
-        process = Process(target=self.run)
-        process.daemon = True
-        process.start()
+        self.target_temp = settings[SP_TEMP]  # Celsius
+        self.tolerance = settings[SP_TOLERANCE]  # Celsius
+        self.sampling = settings[SP_SAMPLING]  # Seconds
+        self.alive = True
+        self.on = False
+        self.peltier_control = SoftwarePeltierDirectControl(control_fans=False)
+        self.set_state(False)  # Always best to ensure we start with everything off
+
+        journal.write("Started thermostat with " +
+                      str(self.target_temp) + "C set-point, " +
+                      str(self.tolerance) + "C tolerance, and " +
+                      str(self.sampling) + " seconds sampling")
+
+    def __enter__(self):
+        journal.write("Thermostat thread starting")
+        self.process = Process(target=self.run)
+        self.process.daemon = True
+        self.process.start()
+
+    def __exit__(self, e_t, e_v, trc):
+        self.kill()
 
     def set_state(self, on: bool):
         self.on = on
         if not on:
+            self.peltier_control.set_state(SoftwarePeltierDirectControl.State.OFF)
             set_fan_speed(0)
         else:
             set_fan_speed(0.4)
 
-    def run(self) -> None:
-        peltier_control = SoftwarePeltierDirectControl(control_fans=False)
-        previous_state = SoftwarePeltierDirectControl.State.OFF
-        set_fan_speed(0)
+    def kill(self):
+        journal.write("Thermostat will get killed")
+        self.set_state(False)
+        self.alive = False
+        self.peltier_control.set_state(SoftwarePeltierDirectControl.State.OFF)
+        journal.write("Thermostat finished kill process")
 
-        if self.record:
-            Path(READS_FOLDER).mkdir(parents=True, exist_ok=True)
-            file: TextIO = open(os.path.join(READS_FOLDER, timestamp() + ".csv"), "w")
-            message = "Started loop at " + timestamp() + "\n"
-            file.write(message)
+    def run(self) -> None:
+        try:
+            previous_state = SoftwarePeltierDirectControl.State.OFF
+            fans_on = False
+
+            message = "Started control loop"
             journal.write(message)
 
-        try:
             next_read = time.time()
             while self.alive:
-                if self.on:
-                    current_time = time.time()
+                current_time = time.time()
+                if current_time > next_read:
 
-                    if current_time > next_read:
+                    settings = read_settings_file()
+
+                    self.on = settings[SP_STATE] == SP_ON
+
+                    if fans_on is not self.on:
+                        if fans_on:
+                            set_fan_speed(0)
+                            self.peltier_control.set_state(SoftwarePeltierDirectControl.State.OFF)
+                        else:
+                            set_fan_speed(0.4)
+                        fans_on = self.on
+
+                    self.target_temp = settings[SP_TEMP]
+                    self.tolerance = settings[SP_TOLERANCE]
+                    self.sampling = settings[SP_SAMPLING]
+
+                    if self.on:
                         current_temp = read_temp(TEMP_FILE)
 
                         if not self.target_temp - self.tolerance <= current_temp <= self.target_temp + self.tolerance:
@@ -66,24 +131,13 @@ class Thermostat:
                             state = SoftwarePeltierDirectControl.State.OFF
 
                         if previous_state != state:
-                            peltier_control.set_state(state)
+                            self.peltier_control.set_state(state)
                             previous_state = state
-
-                            if self.record:
-                                room_temp = read_temp(ROOM_TEMP_FILE)
-                                read = "{0}, {1}, {2}, {3}".format(timestamp(), current_temp, room_temp,
-                                                                   state)
-                                print(read)
-                                read += '\n'
-                                # noinspection PyUnboundLocalVariable
-                                file.write(read)
-
                         next_read = current_time + self.sampling
+        except BaseException as e:
+            journal.write(traceback.format_exc(e))
+            journal.write("Exception occurred:" + str(e))
         finally:
-            if self.record:
-                message = "Loop stopped at " + timestamp() + "\n"
-                file.write(message)
-                journal.write(message)
-                file.close()
-            peltier_control.set_state(SoftwarePeltierDirectControl.State.OFF)
-            set_fan_speed(0)
+            message = "Control loop stopped"
+            journal.write(message)
+            self.set_state(False)
