@@ -5,7 +5,9 @@ READS_FOLDER = MOTH_LOCATION + 'temp-reads'
 SP_STATE = "State"
 SP_TEMP = "Temperature"
 SP_SAMPLING = "Sampling"
-SP_TOLERANCE = "Tolerance"
+# The tolerances how many degrees the temperature is off before starting to heat or cool
+SP_HEAT_TOLERANCE = "Heat Tolerance"
+SP_COOL_TOLERANCE = "Cool Tolerance"
 SP_ON = "On"
 SP_OFF = "Off"
 

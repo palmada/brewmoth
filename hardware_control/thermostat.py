@@ -54,7 +54,8 @@ class Thermostat:
             settings = json.load(set_point_file)
 
         self.target_temp = settings[SP_TEMP]  # Celsius
-        self.tolerance = settings[SP_TOLERANCE]  # Celsius
+        self.heating_threshold = self.target_temp - settings[SP_HEAT_TOLERANCE]  # Celsius
+        self.cooling_threshold = self.target_temp + settings[SP_COOL_TOLERANCE]  # Celsius
         self.sampling = settings[SP_SAMPLING]  # Seconds
         self.alive = True
         self.on = False
@@ -63,7 +64,8 @@ class Thermostat:
 
         journal.write("Started thermostat with " +
                       str(self.target_temp) + "C set-point, " +
-                      str(self.tolerance) + "C tolerance, and " +
+                      str(self.cooling_threshold) + "C cooling threshold, and " +
+                      str(self.heating_threshold) + "C heating threshold, and " +
                       str(self.sampling) + " seconds sampling")
 
     def __enter__(self):
@@ -116,13 +118,14 @@ class Thermostat:
                         fans_on = self.on
 
                     self.target_temp = settings[SP_TEMP]
-                    self.tolerance = settings[SP_TOLERANCE]
+                    self.heating_threshold = self.target_temp - settings[SP_HEAT_TOLERANCE]
+                    self.cooling_threshold = self.target_temp + settings[SP_COOL_TOLERANCE]
                     self.sampling = settings[SP_SAMPLING]
 
                     if self.on:
                         current_temp = read_temp(TEMP_FILE)
 
-                        if not self.target_temp - self.tolerance <= current_temp <= self.target_temp + self.tolerance:
+                        if not self.heating_threshold <= current_temp <= self.cooling_threshold:
                             if current_temp > self.target_temp:
                                 state = SoftwarePeltierDirectControl.State.COOL
                             else:

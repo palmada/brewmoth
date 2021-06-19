@@ -1,6 +1,7 @@
 {
-  "Temperature": 15,
+  "Temperature": 20,
   "Sampling": 5,
-  "Tolerance": 0.1,
-  "State": "On"
+  "Heat Tolerance": 1,
+  "Cool Tolerance": 0.1,
+  "State": "Off"
 }
