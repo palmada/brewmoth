@@ -126,7 +126,7 @@ class Thermostat:
                             if current_temp > self.target_temp:
                                 state = SoftwarePeltierDirectControl.State.COOL
                             else:
-                                state = SoftwarePeltierDirectControl.State.OFF  # TODO: change to heat once fixed
+                                state = SoftwarePeltierDirectControl.State.HEAT
                         else:
                             state = SoftwarePeltierDirectControl.State.OFF
 
