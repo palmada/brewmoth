@@ -9,7 +9,7 @@ from systemd import journal
 
 from hardware_control.fan_control import set_fan_speed
 from hardware_control.peltier_control import SoftwarePeltierDirectControl
-from hardware_control.temperature_sensors import read_temp, TEMP_FILE
+from hardware_control.temperature_sensors import read_temp, TEMP_FILE, ROOM_TEMP_FILE
 from utilities.constants import *
 
 
@@ -124,12 +124,19 @@ class Thermostat:
 
                     if self.on:
                         current_temp = read_temp(TEMP_FILE)
+                        room_temp = read_temp(ROOM_TEMP_FILE)
 
                         if not self.heating_threshold <= current_temp <= self.cooling_threshold:
-                            if current_temp > self.target_temp:
+                            # The current temperature can be the result of overshooting or undershooting so we check
+                            # the room temp as well.
+                            # In this way, the Peltiers don't cycle madly between heating and cooling, which can reduce
+                            # their life span
+                            if room_temp > self.target_temp and current_temp > self.target_temp:
                                 state = SoftwarePeltierDirectControl.State.COOL
-                            else:
+                            elif room_temp < self.target_temp and current_temp < self.target_temp:
                                 state = SoftwarePeltierDirectControl.State.HEAT
+                            else:
+                                state = SoftwarePeltierDirectControl.State.OFF
                         else:
                             state = SoftwarePeltierDirectControl.State.OFF
 
