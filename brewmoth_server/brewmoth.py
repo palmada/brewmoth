@@ -18,14 +18,11 @@ ALLOWED_EXTENSIONS = {'txt', 'json'}
 app = Flask(__name__)
 CORS(app)
 
-updater = BrewFatherUpdater()
-updater.start()
 
-
-# @app.errorhandler(BaseException)
-# def handle_exception(e: BaseException):
-#     journal.write(traceback.format_exc(e))
-#     return "Exception: " + str(e)
+@app.before_first_request
+def init_brewfather():
+    updater = BrewFatherUpdater()
+    updater.start()
 
 
 @app.route("/brewfather", methods=['GET', 'POST'])
