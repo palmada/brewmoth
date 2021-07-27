@@ -18,11 +18,8 @@ ALLOWED_EXTENSIONS = {'txt', 'json'}
 app = Flask(__name__)
 CORS(app)
 
-
-@app.before_first_request
-def init_brewfather():
-    updater = BrewFatherUpdater()
-    updater.start()
+updater = BrewFatherUpdater()
+updater.start()
 
 
 @app.route("/brewfather", methods=['GET', 'POST'])
