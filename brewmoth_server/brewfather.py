@@ -14,6 +14,8 @@ json = {
 
 class BrewFatherUpdater(Thread):
 
+    keepAlive: bool = True
+
     def __init__(self):
         super().__init__()
         self.setDaemon(True)
@@ -21,7 +23,7 @@ class BrewFatherUpdater(Thread):
     def run(self) -> None:
 
         try:
-            while True:
+            while self.keepAlive:
                 try:
                     try:
                         room_temp = str(read_temp(ROOM_TEMP_FILE))
