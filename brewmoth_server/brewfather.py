@@ -14,6 +14,10 @@ json = {
 
 class BrewFatherUpdater(Thread):
 
+    def __init__(self):
+        super().__init__()
+        self.setDaemon(True)
+
     def run(self) -> None:
 
         try:
