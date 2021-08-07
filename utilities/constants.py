@@ -7,6 +7,7 @@ SP_TEMP = "Temperature"
 SP_DATE = "Date"
 SP_TARGET = "Target"
 SP_TYPE = "Type"
+SP_RAMP = "Ramp"
 SP_SAMPLING = "Sampling"
 # The tolerances how many degrees the temperature is off before starting to heat or cool
 SP_HEAT_TOLERANCE = "Heat Tolerance"
