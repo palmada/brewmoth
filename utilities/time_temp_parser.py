@@ -110,15 +110,22 @@ def parse_json_temps(json: dict) -> List[SetPoint]:
         set_point = SetPointFromJSON(temp_entry)
         set_points.append(set_point)
 
-    # We now sort the time points by their time stamps. We use the first on the list as a random radix
+    return sort_set_points(set_points)
+
+
+def sort_set_points(set_points: List[SetPoint]) -> List[SetPoint]:
+    """
+    Sorts a given list of set points based on the date and time stamps.
+
+    :param set_points: A list of set points
+    :return: The same list, with the items sorted by date and time
+    """
     first = set_points[0]
 
     def sort_key(value: SetPoint):
         return time_difference(value, first.date)
 
-    set_points = sorted(set_points, key=sort_key, reverse=True)
-
-    return set_points
+    return sorted(set_points, key=sort_key, reverse=True)
 
 
 def get_temp_point(first_set_point: SetPoint, second_set_point: SetPoint, time_stamp: datetime) -> float:
