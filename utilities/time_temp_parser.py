@@ -110,7 +110,7 @@ def parse_set_point(set_points: List[SetPoint], current_time: datetime):
     previous_set_point = set_points[0]
     time_to_previous = time_difference(previous_set_point, current_time)
 
-    # We create a signal to indicate if and when we didn't get the target temp
+    # We create a signal to indicate if we didn't get the target temp
     target_temp = -100
 
     if time_to_previous > 0:
@@ -137,8 +137,15 @@ def parse_set_point(set_points: List[SetPoint], current_time: datetime):
 
             previous_set_point = next_set_point
 
+        # If we've cycled through the points and we haven't found a temp, then likely
+        # the given time point refers to a point after the temperature profile.
+        # In that case, we just use whatever was the last temperature set point,
+        # which will be recorded in the previous_set_point variable
         if target_temp == -100:
             target_temp = previous_set_point.temp
+
+    # Else, the given time point refers to a point before the list of SetPoints,
+    # so we just use the first SetPoint in the list.
     else:
         target_temp = previous_set_point.temp
 
