@@ -1,6 +1,7 @@
 import json
 import time
 import traceback
+from datetime import datetime
 from json.decoder import JSONDecodeError
 from multiprocessing import Process
 
@@ -11,6 +12,7 @@ from hardware_control.fan_control import set_fan_speed
 from hardware_control.peltier_control import SoftwarePeltierDirectControl
 from hardware_control.temperature_sensors import read_temp, TEMP_FILE, ROOM_TEMP_FILE
 from utilities.constants import *
+from utilities.time_temp_parser import get_temp_for_time, parse_json_temps
 
 
 def read_settings_file():
@@ -53,7 +55,9 @@ class Thermostat:
         with open(SET_POINT_FILE, 'r') as set_point_file:
             settings = json.load(set_point_file)
 
-        self.target_temp = settings[SP_TEMP]  # Celsius
+        # Read temperature profile from file and get target for current date/time
+        self.target_temp = get_temp_for_time(parse_json_temps(settings), datetime.now())  # Celsius
+
         self.heating_threshold = self.target_temp - settings[SP_HEAT_TOLERANCE]  # Celsius
         self.cooling_threshold = self.target_temp + settings[SP_COOL_TOLERANCE]  # Celsius
         self.sampling = settings[SP_SAMPLING]  # Seconds
@@ -117,7 +121,9 @@ class Thermostat:
                             set_fan_speed(0.4)
                         fans_on = self.on
 
-                    self.target_temp = settings[SP_TEMP]
+                    # Read temperature profile from file and get target for current date/time
+                    self.target_temp = get_temp_for_time(parse_json_temps(settings), datetime.now())
+
                     self.heating_threshold = self.target_temp - settings[SP_HEAT_TOLERANCE]
                     self.cooling_threshold = self.target_temp + settings[SP_COOL_TOLERANCE]
                     self.sampling = settings[SP_SAMPLING]
