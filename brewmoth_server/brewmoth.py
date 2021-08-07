@@ -42,9 +42,12 @@ def save_post():
                 if note["status"] == "Fermenting":
                     note_time_stamps.append(note["timestamp"])
 
-            note_time_stamps = sorted(note_time_stamps)
+            if note_time_stamps:
+                note_time_stamps = sorted(note_time_stamps)
 
-            brew_time = datetime.fromtimestamp(note_time_stamps[0] / 1000).time()
+                brew_time = datetime.fromtimestamp(note_time_stamps[0] / 1000).time()
+            else:
+                brew_time = None
 
             set_points = []
 
@@ -52,7 +55,8 @@ def save_post():
                 target_temp = temp["stepTemp"]
                 step_date = datetime.fromtimestamp(temp["actualTime"] / 1000)
 
-                step_date = step_date.replace(hour=brew_time.hour, minute=brew_time.minute)
+                if brew_time is not None:
+                    step_date = step_date.replace(hour=brew_time.hour, minute=brew_time.minute)
 
                 if temp["ramp"] is not None:
                     set_point_type = SetPointType.RAMP
