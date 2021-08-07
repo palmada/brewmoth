@@ -96,6 +96,42 @@ def get_list_set_points(json: List[dict]) -> List[SetPoint]:
     return set_points
 
 
+def get_temp_point(first_set_point: SetPoint, second_set_point: SetPoint, time_stamp: datetime) -> float:
+    """
+    For a given pair of set points and a date and time, this function returns what is the temperature
+    that should be at the given date and time
+
+    :param first_set_point: 1st temperature set point; has to be earlier in time than the 2nd set point.
+    :param second_set_point: 2nd temperature set point; has to be later in time than the 1st set point.
+    :param time_stamp: A datetime object.
+    :return: The temperature that should be set at the given time, according to the two set points.
+             If the given time is earlier than the two set points, then returns the first set point temp.
+             If the given time is later than the two set points, then returns the second set point temp.
+    """
+    time_to_next = time_difference(second_set_point, time_stamp)
+    time_to_previous = time_difference(first_set_point, time_stamp)
+
+    # If we found a time range where our current time point fits
+    if time_to_next < 0 and time_to_previous > 0:
+        if second_set_point.type is SetPointType.RAMP:
+            ramp_time = time_to_previous - time_to_next
+
+            previous_temp = first_set_point.temp
+            next_temp = second_set_point.temp
+            ramp_temp = next_temp - previous_temp
+
+            ramp = ramp_temp / ramp_time
+            target_temp = previous_temp + (time_to_previous * ramp)
+        else:
+            target_temp = first_set_point.temp
+    elif time_to_next > 0:
+        target_temp = second_set_point.temp
+    else:
+        target_temp = first_set_point.temp
+
+    return target_temp
+
+
 def parse_set_point(set_points: List[SetPoint], current_time: datetime):
     """
     From a given list of set points, determine what is the target temperature at the given time.
@@ -120,19 +156,8 @@ def parse_set_point(set_points: List[SetPoint], current_time: datetime):
 
             # If we found a time range where our current time point fits
             if time_to_next < 0 and time_to_previous > 0:
-                if next_set_point.type is SetPointType.RAMP:
-                    ramp_time = time_to_previous - time_to_next
-
-                    previous_temp = previous_set_point.temp
-                    next_temp = next_set_point.temp
-                    ramp_temp = next_temp - previous_temp
-
-                    ramp = ramp_temp / ramp_time
-                    target_temp = previous_temp + (time_to_previous * ramp)
-                    break
-                else:
-                    target_temp = previous_set_point.temp
-                    break
+                target_temp = get_temp_point(previous_set_point, next_set_point, current_time)
+                break
 
             previous_set_point = next_set_point
 
