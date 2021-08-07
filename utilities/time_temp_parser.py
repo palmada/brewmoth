@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import List
+from typing import List, Tuple
 
 from constants import SP_TEMP, SP_DATE, SP_TYPE, SP_TARGET
 
@@ -194,7 +194,22 @@ def parse_set_point(set_points: List[SetPoint], current_time: datetime):
     return target_temp
 
 
-def get_temperature_profile(set_points: List[SetPoint], interval: int):
+def get_temperature_profile(set_points: List[SetPoint], interval: int) -> Tuple[List[datetime], List[float]]:
+    """
+    Generates the temperature profile for a given list of set points.
+    That is, for a given list of sorted set points, this function will generate a series of
+    time stamps (with the frequency set by the given interval in minutes) and calculate what
+    is the temperature the set points define for each of the generated time points.
+
+    The time points will cover the time period from the time stamps on the given set points.
+
+    This is primarily used to visualise a list of set points.
+
+    :param set_points: A sorted list of temperature set points
+    :param interval: The time, in minutes, between each of the generated time points.
+    :return: A list of datetime objects corresponding to the time points,
+             and a respective list of temps
+    """
     times = []
     temps = []
     first = set_points[0]
