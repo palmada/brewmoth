@@ -90,6 +90,14 @@ def time_difference(compared_set_point: SetPoint, time_stamp: datetime) -> float
 
 
 def parse_json_temps(json: dict) -> List[SetPoint]:
+    """
+    From a given "Temperatures" set point file entry, parse into a list of set points.
+    If the JSON just contains a number, it'll return a list with a single set point set for
+    the current time and date of SetPointType Crash
+
+    :param json: A "Temperatures" JSON entry
+    :return: A list of set points
+    """
     temperature_json_entry = json[SP_TEMP]
     set_points = []
 
@@ -101,20 +109,6 @@ def parse_json_temps(json: dict) -> List[SetPoint]:
     for temp_entry in temperature_json_entry:
         set_point = SetPointFromJSON(temp_entry)
         set_points.append(set_point)
-
-    return set_points
-
-
-def get_list_set_points(json: List[dict]) -> List[SetPoint]:
-    """
-    Converts a JSON entry of set points into a list of SetPoint objects, sorted by their time stamps.
-
-    :param json: A parsed "Temperature" entry, as a list of JSON objects
-    :return:
-    """
-    set_points = []
-    for entry in json:
-        set_points.append(SetPointFromJSON(entry))
 
     # We now sort the time points by their time stamps. We use the first on the list as a random radix
     first = set_points[0]
@@ -257,20 +251,14 @@ def get_temperature_profile(set_points: List[SetPoint], interval: int) -> Tuple[
 
 
 if __name__ == '__main__':
-    parsed_temps = parse_json_temps(example_json)
+    list_set_points = parse_json_temps(example_json)
 
-    if len(parsed_temps) == 1:
-        print("Temperature set point is: ", get_temp_for_time(parsed_temps, datetime.now()))
-    elif len(parsed_temps) > 1:
-        list_set_points = get_list_set_points(example_json[SP_TEMP])
+    print("Temperature set point for right now is: ", get_temp_for_time(list_set_points, datetime.now()))
 
-        print("Temperature set point for right now is: ", get_temp_for_time(list_set_points, datetime.now()))
-
+    if len(list_set_points) > 1:
         profile_times, profile_temps = get_temperature_profile(list_set_points, 15)
 
         dates = matplotlib.dates.date2num(profile_times)
         matplotlib.pyplot.plot_date(dates, profile_temps)
 
         matplotlib.pyplot.show()
-    else:
-        print("No temperature found.")
