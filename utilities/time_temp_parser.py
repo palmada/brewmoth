@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import List
 
@@ -35,7 +35,7 @@ example_json = {
         {'Date': '05/08/2021 17:30', 'Target': 20},
         {'Date': '06/08/2021 17:30', 'Target': 20},
         {'Date': '08/08/2021 17:30', 'Target': 25, 'Type': 'Ramp'},
-        {'Date': '09/08/2021 18:30', 'Target': 12},
+        {'Date': '09/08/2021 17:30', 'Target': 12},
     ],
     "Sampling": 5,
     "Heat Tolerance": 1,
@@ -132,6 +132,21 @@ def get_temp_point(first_set_point: SetPoint, second_set_point: SetPoint, time_s
     return target_temp
 
 
+def time_in_range(first_set_point: SetPoint, second_set_point: SetPoint, time_stamp: datetime):
+    """
+    Tests whether a given time stamp falls within the time range of two set points
+
+    :param first_set_point: 1st temperature set point; has to be earlier in time than the 2nd set point.
+    :param second_set_point: 2nd temperature set point; has to be later in time than the 1st set point.
+    :param time_stamp: The datetime object we're checking
+    :return: Whether or not time_stamp corresponds to a time within the two set points.
+    """
+    time_to_next = time_difference(second_set_point, time_stamp)
+    time_to_previous = time_difference(first_set_point, time_stamp)
+
+    return time_to_next <= 0 and time_to_previous >= 0
+
+
 def parse_set_point(set_points: List[SetPoint], current_time: datetime):
     """
     From a given list of set points, determine what is the target temperature at the given time.
@@ -177,4 +192,34 @@ def parse_set_point(set_points: List[SetPoint], current_time: datetime):
         raise ValueError("Could not determine the correct temperature")
 
     return target_temp
+
+
+def get_temperature_profile(set_points: List[SetPoint], interval: int):
+    times = []
+    temps = []
+    first = set_points[0]
+    current_first = first
+    current_second = set_points[1]
+    index = 2
+    last = set_points[-1]
+
+    time_span = int(time_difference(first, last.date) / 60) + 1  # In minutes
+
+    for time_point in range(0, time_span, interval):
+        time = first.date + timedelta(minutes=time_point)
+
+        if not time_in_range(current_first, current_second, time):
+            current_first = current_second
+            current_second = set_points[index]
+            index += 1
+
+        times.append(time)
+        temps.append(get_temp_point(current_first, current_second, time))
+
+    # The last set point is ignored by the above logic, so we add it manually
+    times.append(first.date + timedelta(minutes=time_span + interval - 1))
+    temps.append(last.temp)
+
+    return times, temps
+
 
