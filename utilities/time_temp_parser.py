@@ -114,8 +114,7 @@ def parse_set_point(set_points: List[SetPoint], current_time: datetime):
     target_temp = -100
 
     if time_to_previous > 0:
-        for index in range(1, len(set_points)):
-            next_set_point = set_points[index]
+        for next_set_point in set_points[1:]:
             time_to_next = time_difference(next_set_point, current_time)
             time_to_previous = time_difference(previous_set_point, current_time)
 
