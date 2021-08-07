@@ -35,11 +35,25 @@ def save_post():
 
             temps = received_json["recipe"]["fermentation"]["steps"]
 
+            batch_notes = received_json["notes"]
+            note_time_stamps = []
+
+            for note in batch_notes:
+                if note["status"] == "Fermenting":
+                    note_time_stamps.append(note["timestamp"])
+
+            note_time_stamps = sorted(note_time_stamps)
+
+            brew_time = datetime.fromtimestamp(note_time_stamps[0] / 1000).time()
+
             set_points = []
 
             for temp in temps:
                 target_temp = temp["stepTemp"]
                 step_date = datetime.fromtimestamp(temp["actualTime"] / 1000)
+
+                step_date = step_date.replace(hour=brew_time.hour, minute=brew_time.minute)
+
                 if temp["ramp"] is not None:
                     set_point_type = SetPointType.RAMP
                 else:
