@@ -1,7 +1,7 @@
 from collections import deque
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import matplotlib.dates
 import matplotlib.pyplot
@@ -61,13 +61,21 @@ class SetPoint:
     Represents one temperature set point on our temperature profile.
     """
 
-    def __init__(self, json: dict):
-        self.temp = json[SP_TARGET]
-        self.date = datetime.strptime(json[SP_DATE], TIME_STAMP_FORMAT)
-        if SP_TYPE in json:
-            self.type = SetPointType.RAMP
-        else:
-            self.type = SetPointType.CRASH
+    def __init__(self, temp: Union[float, int], date=datetime.now(), set_point_type=SetPointType.CRASH):
+        self.temp = temp
+        self.date = date
+        self.type = set_point_type
+
+
+def SetPointFromJSON(json: dict) -> SetPoint:
+    temp = json[SP_TARGET]
+    date = datetime.strptime(json[SP_DATE], TIME_STAMP_FORMAT)
+    if SP_TYPE in json:
+        set_point_type = SetPointType.RAMP
+    else:
+        set_point_type = SetPointType.CRASH
+
+    return SetPoint(temp, date, set_point_type)
 
 
 def time_difference(compared_set_point: SetPoint, time_stamp: datetime) -> float:
@@ -81,6 +89,22 @@ def time_difference(compared_set_point: SetPoint, time_stamp: datetime) -> float
     return (time_stamp - compared_set_point.date).total_seconds()
 
 
+def parse_json_temps(json: dict) -> List[SetPoint]:
+    temperature_json_entry = json[SP_TEMP]
+    set_points = []
+
+    if isinstance(temperature_json_entry, float) or isinstance(temperature_json_entry, int):
+        set_point = SetPoint(temperature_json_entry)
+        set_points.append(set_point)
+        return set_points
+
+    for temp_entry in temperature_json_entry:
+        set_point = SetPointFromJSON(temp_entry)
+        set_points.append(set_point)
+
+    return set_points
+
+
 def get_list_set_points(json: List[dict]) -> List[SetPoint]:
     """
     Converts a JSON entry of set points into a list of SetPoint objects, sorted by their time stamps.
@@ -90,7 +114,7 @@ def get_list_set_points(json: List[dict]) -> List[SetPoint]:
     """
     set_points = []
     for entry in json:
-        set_points.append(SetPoint(entry))
+        set_points.append(SetPointFromJSON(entry))
 
     # We now sort the time points by their time stamps. We use the first on the list as a random radix
     first = set_points[0]
@@ -139,7 +163,7 @@ def get_temp_point(first_set_point: SetPoint, second_set_point: SetPoint, time_s
     return target_temp
 
 
-def parse_set_point(set_points: List[SetPoint], current_time: datetime):
+def get_temp_for_time(set_points: List[SetPoint], current_time: datetime):
     """
     From a given list of set points, determine what is the target temperature at the given time.
 
@@ -233,11 +257,20 @@ def get_temperature_profile(set_points: List[SetPoint], interval: int) -> Tuple[
 
 
 if __name__ == '__main__':
-    list_set_points = get_list_set_points(example_json[SP_TEMP])
+    parsed_temps = parse_json_temps(example_json)
 
-    profile_times, profile_temps = get_temperature_profile(list_set_points, 15)
+    if len(parsed_temps) == 1:
+        print("Temperature set point is: ", get_temp_for_time(parsed_temps, datetime.now()))
+    elif len(parsed_temps) > 1:
+        list_set_points = get_list_set_points(example_json[SP_TEMP])
 
-    dates = matplotlib.dates.date2num(profile_times)
-    matplotlib.pyplot.plot_date(dates, profile_temps)
+        print("Temperature set point for right now is: ", get_temp_for_time(list_set_points, datetime.now()))
 
-    matplotlib.pyplot.show()
+        profile_times, profile_temps = get_temperature_profile(list_set_points, 15)
+
+        dates = matplotlib.dates.date2num(profile_times)
+        matplotlib.pyplot.plot_date(dates, profile_temps)
+
+        matplotlib.pyplot.show()
+    else:
+        print("No temperature found.")
