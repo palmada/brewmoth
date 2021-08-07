@@ -118,21 +118,21 @@ def parse_set_point(set_points: List[SetPoint], current_time: datetime):
             time_to_next = time_difference(next_set_point, current_time)
             time_to_previous = time_difference(previous_set_point, current_time)
 
-            if time_to_next < 0 \
-                    and time_to_previous > 0 \
-                    and next_set_point.type is SetPointType.RAMP:
-                # We found two set points that are before and after the current time.
-                ramp_time = time_to_previous - time_to_next
+            # If we found a time range where our current time point fits
+            if time_to_next < 0 and time_to_previous > 0:
+                if next_set_point.type is SetPointType.RAMP:
+                    ramp_time = time_to_previous - time_to_next
 
-                previous_temp = previous_set_point.temp
-                next_temp = next_set_point.temp
-                ramp_temp = next_temp - previous_temp
+                    previous_temp = previous_set_point.temp
+                    next_temp = next_set_point.temp
+                    ramp_temp = next_temp - previous_temp
 
-                ramp = ramp_temp / ramp_time
-                target_temp = previous_temp + (time_to_previous * ramp)
-                break
-            else:
-                target_temp = next_set_point.temp
+                    ramp = ramp_temp / ramp_time
+                    target_temp = previous_temp + (time_to_previous * ramp)
+                    break
+                else:
+                    target_temp = previous_set_point.temp
+                    break
 
             previous_set_point = next_set_point
 
