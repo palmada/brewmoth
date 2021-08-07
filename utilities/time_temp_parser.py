@@ -1,6 +1,10 @@
+from collections import deque
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Tuple
+
+import matplotlib.dates
+import matplotlib.pyplot
 
 from constants import SP_TEMP, SP_DATE, SP_TYPE, SP_TARGET
 
@@ -15,7 +19,9 @@ The below JSON shows an example of how to structure a temperature set point that
 The example should result in the following profile:
 1 - The temperature will be held at 20°C for a day
 2 - The temperature will then ramp up from 20°C to 25°C over two days
-3 - Afterwards, the temperature will crash down to 12°C as fast as the system can
+3 - It will be held at 25°C for 6 hours
+4 - Afterwards, the temperature will crash down to 18°C as fast as the system can and hold it for 20 hours
+5 - And then finally crash to 12°C
 
  
 Notes:
@@ -35,6 +41,7 @@ example_json = {
         {'Date': '05/08/2021 17:30', 'Target': 20},
         {'Date': '06/08/2021 17:30', 'Target': 20},
         {'Date': '08/08/2021 17:30', 'Target': 25, 'Type': 'Ramp'},
+        {'Date': '08/08/2021 23:30', 'Target': 18},
         {'Date': '09/08/2021 17:30', 'Target': 12},
     ],
     "Sampling": 5,
@@ -225,3 +232,12 @@ def get_temperature_profile(set_points: List[SetPoint], interval: int) -> Tuple[
     return times, temps
 
 
+if __name__ == '__main__':
+    list_set_points = get_list_set_points(example_json[SP_TEMP])
+
+    profile_times, profile_temps = get_temperature_profile(list_set_points, 15)
+
+    dates = matplotlib.dates.date2num(profile_times)
+    matplotlib.pyplot.plot_date(dates, profile_temps)
+
+    matplotlib.pyplot.show()
