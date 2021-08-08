@@ -6,7 +6,7 @@ from typing import List, Tuple, Union
 import matplotlib.dates
 import matplotlib.pyplot
 
-from constants import SP_TEMP, SP_DATE, SP_TYPE, SP_TARGET, SP_RAMP
+from utilities.constants import SP_TEMP, SP_DATE, SP_TYPE, SP_TARGET, SP_RAMP
 
 TIME_STAMP_FORMAT = '%d/%m/%Y %H:%M'
 
