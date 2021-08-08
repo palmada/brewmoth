@@ -54,6 +54,10 @@ def save_post():
             for temp in temps:
                 target_temp = temp["stepTemp"]
                 step_date = datetime.fromtimestamp(temp["actualTime"] / 1000)
+                step_type = temp["type"]
+
+                if step_type == "Conditioning":
+                    continue
 
                 if brew_time is not None:
                     step_date = step_date.replace(hour=brew_time.hour, minute=brew_time.minute)
