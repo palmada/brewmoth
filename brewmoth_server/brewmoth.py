@@ -29,7 +29,8 @@ def save_post():
         if request.is_json:
             received_json = request.get_json()
             time_stamp = timestamp() + ".batch"
-            file = open(os.path.join(BATCH_FOLDER, time_stamp), "w")
+            batch_file_location = os.path.join(BATCH_FOLDER, time_stamp)
+            file = open(batch_file_location, "w")
 
             # noinspection PyBroadException
             try:
@@ -44,11 +45,12 @@ def save_post():
                 write_to_settings_file(settings)
             except Exception as e:
                 journal.write("Exception while parsing brewfather batch.")
-                journal.write(e)
+                journal.write(str(e))
 
             file.write(json.dumps(received_json))
             file.close()
 
+            journal.write("Received Brewfather batch" + batch_file_location)
         else:
             return "request was not a json"
 
@@ -86,13 +88,19 @@ def hello():
 
                 write_to_settings_file(settings)
 
+                journal.write(return_message)
+
                 return return_message
 
             elif data == CLI_GET_TEMP:
-                return {
+                temps = {
                     CLI_FRIDGE: read_temp(TEMP_FILE),
                     CLI_ROOM: read_temp(ROOM_TEMP_FILE)
                 }
+
+                journal.write("Received request for temps, returning " + str(temps))
+
+                return temps
             elif data == CLI_OFF:
                 settings = read_settings_file()
                 thermostat_on = settings[SP_STATE] == SP_ON
@@ -100,17 +108,26 @@ def hello():
                 if thermostat_on:
                     settings[SP_STATE] = SP_OFF
                     write_to_settings_file(settings)
-                    return "Turned off temperature control."
+                    return_message = "Turned off temperature control."
                 else:
-                    return "Was asked to turn off, but temperature control is already off."
+                    return_message = "Was asked to turn off, but temperature control is already off."
+
+                journal.write(return_message)
+                return return_message
             else:
-                return "Got the following post: " + str(data) + ", but don't know what to do with it."
+                message = "Got the following post: " + str(data) + ", but don't know what to do with it."
+                journal.write(message)
+                return message
 
         else:
-            return "Not a correct post"
+            message = "Received an incorrect post"
+            journal.write(message)
+            return message
 
     except Exception as e:
-        return "Exception: " + str(e)
+        message = "Exception: " + str(e)
+        journal.write(message)
+        return message
 
 
 if __name__ == "__main__":
