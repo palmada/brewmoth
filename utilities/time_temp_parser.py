@@ -273,6 +273,6 @@ if __name__ == '__main__':
         profile_times, profile_temps = get_temperature_profile(list_set_points, 15)
 
         dates = matplotlib.dates.date2num(profile_times)
-        matplotlib.pyplot.plot_date(dates, profile_temps)
+        matplotlib.pyplot.plot_date(dates, profile_temps, marker='', color='red', linestyle='solid')
 
         matplotlib.pyplot.show()
