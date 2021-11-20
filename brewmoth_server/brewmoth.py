@@ -1,5 +1,5 @@
-import json
 import os
+import json
 
 from flask import Flask, request
 from flask_cors import CORS
@@ -14,12 +14,10 @@ from utilities.formatters import timestamp
 
 BATCH_FOLDER = MOTH_LOCATION + 'batches'
 ALLOWED_EXTENSIONS = {'txt', 'json'}
+NAME = "Moth"
 
 app = Flask(__name__)
 CORS(app)
-
-updater = BrewFatherUpdater()
-updater.start()
 
 
 @app.route("/brewfather", methods=['GET', 'POST'])
@@ -131,4 +129,13 @@ def hello():
 
 
 if __name__ == "__main__":
+
+    with open(CONFIG_FILE, 'r') as config_file:
+        config_data = config_file.read()
+
+    NAME: str = json.loads(config_data)[CFG_NAME]
+
+    updater = BrewFatherUpdater(NAME)
+    updater.start()
+
     app.run(host='0.0.0.0')

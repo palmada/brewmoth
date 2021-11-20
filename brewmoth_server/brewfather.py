@@ -5,11 +5,11 @@ from typing import List
 import requests
 
 from hardware_control.temperature_sensors import *
+from utilities.constants import CFG_NAME
 from utilities.time_temp_parser import SetPointType, SetPoint, sort_set_points
 
 url = 'http://log.brewfather.net/stream?id=OniWOwAOjMnLsM'
 json = {
-    "name": "Moth",  # Required field, this will be the ID in Brewfather
     "temp": -5,
     "temp_unit": "C",  # C, F, K
 }
@@ -19,9 +19,11 @@ class BrewFatherUpdater(Thread):
 
     keepAlive: bool = True
 
-    def __init__(self):
+    def __init__(self, name: str):
         super().__init__()
         self.setDaemon(True)
+
+        json[CFG_NAME] = name # this will be the ID in Brewfather
 
     def run(self) -> None:
 

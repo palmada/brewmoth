@@ -1,6 +1,9 @@
 MOTH_LOCATION = '/brewmoth/'
 SET_POINT_FILE = MOTH_LOCATION + "/set_point.json"
+CONFIG_FILE = MOTH_LOCATION + "/config.json"
 READS_FOLDER = MOTH_LOCATION + 'temp-reads'
+
+CFG_NAME = "Name"
 
 SP_STATE = "State"
 SP_TEMP = "Temperature"
