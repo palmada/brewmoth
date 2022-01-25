@@ -31,4 +31,33 @@ sudo systemctl daemon-reload
 sudo service enable brewmoth
 sudo service brewmoth restart
 ````
-7. Todo: NGINX?
+8. Create Nginx configuration file:
+```shell
+sudo nano /etc/nginx/sites-available/brewmoth
+```
+9. And copy the following:
+```shell
+server {
+    listen 555;
+    server_name 127.0.0.1;
+    
+    location / {
+        include         uwsgi_params;
+        uwsgi_pass      unix:/brewmoth/brewmoth.sock;
+    }
+}
+```
+10. Enable the site:
+```shell
+sudo ln -s /etc/nginx/sites-available/brewmoth /etc/nginx/sites-enabled/brewmoth
+```
+11. Test file and restart nginx:
+```shell
+sudo nginx -t
+sudo service nginx restart
+```
+
+You can now connect and use the following commands from the brewmoth directory:
+`./temps`
+`./fans`
+`./peltiers`
