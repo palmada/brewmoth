@@ -38,7 +38,7 @@ sudo nano /etc/nginx/sites-available/brewmoth
 9. And copy the following:
 ```shell
 server {
-    listen 555;
+    listen 6666;
     server_name 127.0.0.1;
     
     location / {

@@ -14,4 +14,4 @@ journal.write("Initializing Brewmoth...")
 brewmoth.initialize()
 
 if __name__ == "__main__":
-    app.run()
+    app.run(threaded=True, host='0.0.0.0', port=6666)

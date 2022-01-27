@@ -25,7 +25,7 @@ SP_COOL_TOLERANCE = "Cool Tolerance"
 SP_ON = "On"
 SP_OFF = "Off"
 
-CLI_URL = 'http://127.0.0.1:555/cli'
+CLI_URL = 'http://127.0.0.1:6666/cli'
 CLI_GET_TEMP = 'Get temperatures'
 CLI_SET_TEMP = 'Set temperature'
 CLI_RECORD = 'Record thermostat changes'
