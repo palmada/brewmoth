@@ -3,12 +3,12 @@ from threading import Thread
 from typing import List
 
 import requests
-
-from hardware_control.temperature_sensors import *
-from utilities.constants import NAME, CFG_BREWFATHER
-from utilities.time_temp_parser import SetPointType, SetPoint, sort_set_points
 # noinspection PyUnresolvedReferences
 from systemd import journal
+
+from hardware_control.temperature_sensors import *
+from utilities.constants import NAME, SENSOR_TYPE_MAIN, SENSOR_TYPE_ROOM
+from utilities.time_temp_parser import SetPointType, SetPoint, sort_set_points
 
 url = 'http://log.brewfather.net/stream?id=OniWOwAOjMnLsM'
 json = {
@@ -24,6 +24,15 @@ class BrewFatherUpdater(Thread):
         self.setDaemon(True)
         self.config = config
 
+        for sensor in config[CFG_SENSORS]:
+            if sensor[TYPE] == SENSOR_TYPE_MAIN:
+                self.main_sensor = sensor[NAME]
+            if sensor[TYPE] == SENSOR_TYPE_ROOM:
+                self.room_sensor = sensor[NAME]
+
+        if not hasattr(self, 'main_sensor'):
+            raise Exception("BrewFatherUpdater could not find the main temperature sensor information")
+
         json["name"] = config[NAME]  # this will be the ID in Brewfather
         journal.write("Did initialize BrewFatherUpdater")
 
@@ -34,12 +43,12 @@ class BrewFatherUpdater(Thread):
                 try:
                     temperatures = read_temps(self.config)
 
-                    # The temperature name is read as the user readable name...
+                    # We find now the main and room sensor, if present
                     for temperature in temperatures:
-                        # We check if we've configured that sensor name to match one on brewfather...
-                        if temperature in self.config[CFG_BREWFATHER]:
-                            # If so, use the brewfather name instead of the user readable name
-                            json[self.config[CFG_BREWFATHER][temperature]] = temperatures[temperature]
+                        if temperature == self.main_sensor:
+                            json["temp"] = temperatures[temperature]
+                        if hasattr(self, 'room_sensor') and temperature == self.room_sensor:
+                            json["ext_temp"] = temperatures[temperature]
 
                     requests.post(url, data=json)
                     time.sleep(900)
