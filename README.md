@@ -58,7 +58,12 @@ sudo service nginx restart
 ```
 
 ## Run from command-line
-To troubleshoot, it's best to start brewmoth using the command-line. You can start the brewmoth using the command:
+To troubleshoot, it's best to start brewmoth using the command-line. 
+First, you need to turn on the virtual environment:
+```
+source /brewmoth/brewvenv/bin/activate
+```
+You can then start the brewmoth using the command:
 ```commandline
 python /brewmoth/wsgi.py
 ```
@@ -104,3 +109,5 @@ you can use the following commands from the brewmoth directory:
 ./peltiers
 ```
 You can run any of the above commands with `-h` after to get more information on how and why to use them.
+
+Note, for `track-temps` you might need to first activate the virtual environment (see above).
