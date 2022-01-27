@@ -1,7 +1,31 @@
 # Brewmoth
-Project to control a peltier driven fermentation chamber for home brewing
+
+## The gist
+Brewmoth is a project to convert a Raspberry Pi into a general tool to assis with home-brewing,
+but can also be used more generally for temperature logging and control.
+
+## Background
+The original motivation was to use create a DYI fermentation chamber using peltier modules,
+but the code can be used more generally than that.
+For example, you can use it to make a temperature logger that interfaces with brewfather
+or to control a standard keezer set-up with InkBird and resistive heater,
+but with added temperature logging.
 
 # Fresh setup
+
+## Connecting to the Raspberry pi
+
+This is beyond the scope of this README, but here are some resources.
+There are two options:
+1. Edit the SD card on your normal computer to add your Wi-Fi details.
+   [Here is an example guide on how to do this.](https://forums.raspberrypi.com/viewtopic.php?t=259894])
+2. Alternatively you can connect a USB hub with a key-board and mouse, and an HDMI monitor to add the Wi-Fi details
+   as normal
+
+Once the Wi-Fi details can be added you can use `ssh` to connect to the raspberry pi.
+[More information can be found here.][1]
+
+## Full installation
 
 1. Install the following:
 ```shell
@@ -38,6 +62,11 @@ sudo service nginx restart
 ```
 If not using nginx, you'll need to set up another service to connect to the unix socket that brewmoth is listening on.
 
+You also can add the brewmoth directory to PATH To allow the above commands to be called from anywhere in the shell
+1. Call `sudo nano ~/.profile` to start editing the `.profile` file
+2. Add the following line `PATH=~/opt/bin:$PATH` to the end of the file.
+3. Exit with `ctrl+x`, select `y` and accept.
+
 ## Run from command-line
 To troubleshoot, it's best to start brewmoth using the command-line. 
 First, you need to turn on the virtual environment:
@@ -55,7 +84,7 @@ Once you know everything is great, you can configure it the brewmoth service.
 
 ### Configure service
 
-To do so, stop any running brewmoth instance that you may have started through the command-line,
+To configure it as a service, stop any running brewmoth instance that you may have started through the command-line,
 and then activate the service file:
 ```shell
 ln -s /etc/systemd/system/brewmoth.service /brewmoth/brewmoth_server/brewmoth.service`
@@ -93,9 +122,4 @@ You can run any of the above commands with `-h` after to get more information on
 
 Note, for `track-temps` you might need to first activate the virtual environment (see above).
 
-### Access command from anywhere
-
-You can add the brewmoth directory to PATH To allow the above commands to be called from anywhere.
-1. Call `sudo nano ~/.profile` to start editing the `.profile` file
-2. Add the following line `PATH=~/opt/bin:$PATH` to the end of the file.
-3. Exit with `ctrl+x`, select `y` and accept.
+[1]: https://www.raspberrypi.com/documentation/computers/remote-access.html#setting-up-an-ssh-server
