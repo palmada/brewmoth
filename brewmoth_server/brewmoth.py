@@ -2,6 +2,7 @@ import os
 import json
 
 from flask import Flask, request
+# noinspection PyUnresolvedReferences
 from flask_cors import CORS
 # noinspection PyUnresolvedReferences
 from systemd import journal
@@ -19,10 +20,24 @@ CONFIG_DATA = dict()
 app = Flask(__name__)
 CORS(app)
 
-if not CONFIG_DATA:
+
+def initialize(brewfather: bool = True):
+    """
+    Must be called before the Flask app is started.
+
+    :param brewfather: Whether or not to start the thread to send updates to Brewfather
+    """
     with open(CONFIG_FILE, 'r') as config_file:
         file_contents = config_file.read()
+        global CONFIG_DATA
         CONFIG_DATA = json.loads(file_contents)
+
+    if brewfather and CFG_BREWFATHER in CONFIG_DATA:
+        journal.write("Will initialize BrewFatherUpdater")
+        updater = BrewFatherUpdater(CONFIG_DATA)
+        updater.start()
+
+    journal.write("Initialized with config: \n" + json.dumps(CONFIG_DATA, indent=4))
 
 
 @app.route("/brewfather", methods=['GET', 'POST'])
@@ -131,7 +146,5 @@ def hello():
 
 
 if __name__ == "__main__":
-    updater = BrewFatherUpdater(CONFIG_DATA)
-    updater.start()
-
+    initialize()
     app.run(host='0.0.0.0')

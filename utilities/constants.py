@@ -5,7 +5,9 @@ READS_FOLDER = MOTH_LOCATION + 'temp-reads'
 
 CFG_NAME = "Name"
 CFG_SENSORS = "Temperature sensors"
+CFG_BREWFATHER = "Brewfather"
 
+# Default sensor names
 SENSOR_TEMP = "temp"
 SENSOR_ROOM = "ext_temp"  # Mirrors brewfather's name
 
