@@ -14,10 +14,15 @@ from utilities.formatters import timestamp
 
 BATCH_FOLDER = MOTH_LOCATION + 'batches'
 ALLOWED_EXTENSIONS = {'txt', 'json'}
-NAME = "Moth"
+CONFIG_DATA = dict()
 
 app = Flask(__name__)
 CORS(app)
+
+if not CONFIG_DATA:
+    with open(CONFIG_FILE, 'r') as config_file:
+        file_contents = config_file.read()
+        CONFIG_DATA = json.loads(file_contents)
 
 
 @app.route("/brewfather", methods=['GET', 'POST'])
@@ -91,14 +96,11 @@ def hello():
                 return return_message
 
             elif data == CLI_GET_TEMP:
-                temps = {
-                    CLI_FRIDGE: read_temp(TEMP_FILE),
-                    CLI_ROOM: read_temp(ROOM_TEMP_FILE)
-                }
+                temperatures = read_temps_to_dict(CONFIG_DATA)
 
-                journal.write("Received request for temps, returning " + str(temps))
+                journal.write("Received request for temps, returning " + str(temperatures))
 
-                return temps
+                return temperatures
             elif data == CLI_OFF:
                 settings = read_settings_file()
                 thermostat_on = settings[SP_STATE] == SP_ON
@@ -129,13 +131,7 @@ def hello():
 
 
 if __name__ == "__main__":
-
-    with open(CONFIG_FILE, 'r') as config_file:
-        config_data = config_file.read()
-
-    NAME: str = json.loads(config_data)[CFG_NAME]
-
-    updater = BrewFatherUpdater(NAME)
+    updater = BrewFatherUpdater(CONFIG_DATA)
     updater.start()
 
     app.run(host='0.0.0.0')

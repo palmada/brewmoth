@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 import argparse
+import json
 import os
 import time
 from pathlib import Path
 
 from hardware_control.fan_control import set_fan_speed
 from hardware_control.peltier_control import SoftwarePeltierDirectControl
-from hardware_control.temperature_sensors import TEMP_FILE, read_temp, ROOM_TEMP_FILE
-from utilities.constants import READS_FOLDER
+from hardware_control.temperature_sensors import read_temp, sensor_location, check_sensors_are_present
+from utilities.constants import READS_FOLDER, CONFIG_FILE, SENSOR_TEMP, SENSOR_ROOM, CFG_SENSORS
 from utilities.formatters import timestamp
 
 if __name__ == '__main__':
@@ -40,14 +41,22 @@ if __name__ == '__main__':
 
     set_fan_speed(0.4)
 
+    with open(CONFIG_FILE, 'r') as config_file:
+        config_data = json.loads(config_file.read())
+
+    check_sensors_are_present(config_data, SENSOR_TEMP, SENSOR_ROOM)
+
+    temp_file = sensor_location(config_data[CFG_SENSORS][SENSOR_TEMP])
+    room_temp_file = sensor_location(config_data[CFG_SENSORS][SENSOR_ROOM])
+
     try:
         next_read = time.time()
         while True:
             current_time = time.time()
 
             if current_time > next_read:
-                current_temp = read_temp(TEMP_FILE)
-                room_temp = read_temp(ROOM_TEMP_FILE)
+                current_temp = read_temp(temp_file)
+                room_temp = read_temp(room_temp_file)
 
                 if not target_temp - tolerance <= current_temp <= target_temp + tolerance:
                     if current_temp > target_temp:

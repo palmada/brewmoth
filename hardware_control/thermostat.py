@@ -8,9 +8,10 @@ from multiprocessing import Process
 # noinspection PyUnresolvedReferences
 from systemd import journal
 
+import brewmoth_server.brewmoth
 from hardware_control.fan_control import set_fan_speed
 from hardware_control.peltier_control import SoftwarePeltierDirectControl
-from hardware_control.temperature_sensors import read_temp, TEMP_FILE
+from hardware_control.temperature_sensors import read_temp, sensor_location, check_sensors_are_present
 from utilities.constants import *
 from utilities.time_temp_parser import get_temp_for_time, parse_json_temps
 
@@ -51,9 +52,15 @@ def write_to_settings_file(settings):
 
 class Thermostat:
 
-    def __init__(self):
+    def __init__(self, config: dict):
         with open(SET_POINT_FILE, 'r') as set_point_file:
             settings = json.load(set_point_file)
+
+        self.config = config
+
+        check_sensors_are_present(config, SENSOR_TEMP)
+
+        self.temp_file = sensor_location(config[CFG_SENSORS][SENSOR_TEMP])
 
         # Read temperature profile from file and get target for current date/time
         self.target_temp = get_temp_for_time(parse_json_temps(settings), datetime.now())  # Celsius
@@ -129,7 +136,7 @@ class Thermostat:
                     self.sampling = settings[SP_SAMPLING]
 
                     if self.on:
-                        current_temp = read_temp(TEMP_FILE)
+                        current_temp = read_temp(self.temp_file)
 
                         if not self.heating_threshold <= current_temp <= self.cooling_threshold:
                             if current_temp > self.target_temp:

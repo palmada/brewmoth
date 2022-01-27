@@ -10,40 +10,29 @@ from utilities.time_temp_parser import SetPointType, SetPoint, sort_set_points
 
 url = 'http://log.brewfather.net/stream?id=OniWOwAOjMnLsM'
 json = {
-    "temp": -5,
     "temp_unit": "C",  # C, F, K
 }
 
 
 class BrewFatherUpdater(Thread):
-
     keepAlive: bool = True
 
-    def __init__(self, name: str):
+    def __init__(self, config: dict):
         super().__init__()
         self.setDaemon(True)
+        self.config = config
 
-        json[CFG_NAME] = name # this will be the ID in Brewfather
+        json[CFG_NAME] = config[CFG_NAME]  # this will be the ID in Brewfather
 
     def run(self) -> None:
 
         try:
             while self.keepAlive:
                 try:
-                    try:
-                        room_temp = str(read_temp(ROOM_TEMP_FILE))
-                        json["ext_temp"] = room_temp
-                    except Exception as e:
-                        print("Failed to get room temp:", str(e))
+                    temperatures = read_temps_to_dict(self.config)
 
-                    try:
-                        fermenter_temp = str(read_temp(TEMP_FILE))
-                        json["temp"] = fermenter_temp
-                    except Exception as e:
-                        print("Failed to get fridge temp:", str(e))
-
-                    if "ext_temp" not in json and "temp" not in json:
-                        raise Exception("Failed to get either temperature")
+                    for temperature in temperatures:
+                        json[temperature] = temperatures[temperature]
 
                     requests.post(url, data=json)
                     time.sleep(900)

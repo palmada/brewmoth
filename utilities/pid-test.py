@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 import argparse
+import json
 import os
 from pathlib import Path
 
 from simple_pid import PID
 
 from hardware_control.peltier_control import SoftwarePeltierPWMControl
-from hardware_control.temperature_sensors import TEMP_FILE, read_temp, ROOM_TEMP_FILE
-from utilities.constants import READS_FOLDER
+from hardware_control.temperature_sensors import read_temp, sensor_location, check_sensors_are_present
+from utilities.constants import READS_FOLDER, CONFIG_FILE, SENSOR_TEMP, SENSOR_ROOM, CFG_SENSORS
 from utilities.formatters import timestamp
 
 if __name__ == '__main__':
@@ -22,10 +23,7 @@ if __name__ == '__main__':
     os.system('modprobe w1-gpio')
     os.system('modprobe w1-therm')
 
-    # pid = PID(0.7, 130, 70, setpoint=target_temp) 21:38 on feb 23
-    # pid = PID(0.6, 0.005, 40, setpoint=target_temp)
-    # pid = PID(4.154, 0.0155, 276, setpoint=target_temp) # 22:23 on feb 24 untested
-    pid = PID(1.65, 0.00407, 145.2, setpoint=target_temp) # 22:23 on feb 24 tested alternative
+    pid = PID(1.65, 0.00407, 145.2, setpoint=target_temp)  # 22:23 on feb 24 tested alternative
 
     # Update every
     pid.sample_time = 30  # seconds
@@ -47,10 +45,18 @@ if __name__ == '__main__':
 
     file = open(os.path.join(READS_FOLDER, timestamp() + ".pid.csv"), "w")
 
+    with open(CONFIG_FILE, 'r') as config_file:
+        config_data = json.loads(config_file.read())
+
+    check_sensors_are_present(config_data, SENSOR_TEMP, SENSOR_ROOM)
+
+    temp_file = sensor_location(config_data[CFG_SENSORS][SENSOR_TEMP])
+    room_temp_file = sensor_location(config_data[CFG_SENSORS][SENSOR_ROOM])
+
     try:
         while True:
-            current_temp = read_temp(TEMP_FILE)
-            room_temp = read_temp(ROOM_TEMP_FILE)
+            current_temp = read_temp(temp_file)
+            room_temp = read_temp(room_temp_file)
             peltier_duty_cycle = pid(current_temp)
 
             if peltier_duty_cycle != current_value:

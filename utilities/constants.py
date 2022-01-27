@@ -4,6 +4,10 @@ CONFIG_FILE = MOTH_LOCATION + "/config.json"
 READS_FOLDER = MOTH_LOCATION + 'temp-reads'
 
 CFG_NAME = "Name"
+CFG_SENSORS = "Temperature sensors"
+
+SENSOR_TEMP = "temp"
+SENSOR_ROOM = "ext_temp"  # Mirrors brewfather's name
 
 SP_STATE = "State"
 SP_TEMP = "Temperature"
@@ -25,3 +29,5 @@ CLI_RECORD = 'Record thermostat changes'
 CLI_OFF = 'Turn off temperature control'
 CLI_FRIDGE = 'Fridge temperature'
 CLI_ROOM = 'Room temperature'
+
+ERROR_NO_SENSORS = "Could not find temperature sensor settings in config.json"
