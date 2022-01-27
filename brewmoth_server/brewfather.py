@@ -7,6 +7,8 @@ import requests
 from hardware_control.temperature_sensors import *
 from utilities.constants import CFG_NAME
 from utilities.time_temp_parser import SetPointType, SetPoint, sort_set_points
+# noinspection PyUnresolvedReferences
+from systemd import journal
 
 url = 'http://log.brewfather.net/stream?id=OniWOwAOjMnLsM'
 json = {
@@ -22,7 +24,8 @@ class BrewFatherUpdater(Thread):
         self.setDaemon(True)
         self.config = config
 
-        json[CFG_NAME] = config[CFG_NAME]  # this will be the ID in Brewfather
+        json["name"] = config[CFG_NAME]  # this will be the ID in Brewfather
+        journal.write("Did initialize BrewFatherUpdater")
 
     def run(self) -> None:
 
