@@ -8,10 +8,10 @@ from multiprocessing import Process
 # noinspection PyUnresolvedReferences
 from systemd import journal
 
-import brewmoth_server.brewmoth
 from hardware_control.fan_control import set_fan_speed
 from hardware_control.peltier_control import SoftwarePeltierDirectControl
-from hardware_control.temperature_sensors import read_temp, sensor_location, check_sensors_are_present
+from hardware_control.temperature_sensors import read_temp, check_sensor_types_are_present, \
+    get_location_for_sensor
 from utilities.constants import *
 from utilities.time_temp_parser import get_temp_for_time, parse_json_temps
 
@@ -58,9 +58,9 @@ class Thermostat:
 
         self.config = config
 
-        check_sensors_are_present(config, SENSOR_TEMP)
+        check_sensor_types_are_present(config, SENSOR_TYPE_MAIN)
 
-        self.temp_file = sensor_location(config[CFG_SENSORS][SENSOR_TEMP])
+        self.temp_file = get_location_for_sensor(config, SENSOR_TYPE_MAIN)
 
         # Read temperature profile from file and get target for current date/time
         self.target_temp = get_temp_for_time(parse_json_temps(settings), datetime.now())  # Celsius

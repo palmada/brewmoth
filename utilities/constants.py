@@ -3,19 +3,20 @@ SET_POINT_FILE = MOTH_LOCATION + "/set_point.json"
 CONFIG_FILE = MOTH_LOCATION + "/config.json"
 READS_FOLDER = MOTH_LOCATION + 'temp-reads'
 
-CFG_NAME = "Name"
-CFG_SENSORS = "Temperature sensors"
-CFG_BREWFATHER = "Brewfather"
+TYPE = 'Type'
+NAME = 'Name'
 
-# Default sensor names
-SENSOR_TEMP = "Fermentation Temperature"
-SENSOR_ROOM = "Room Temperature"
+CFG_BREWFATHER = 'Brewfather'
+CFG_SENSORS = 'Temperature sensors'
+CFG_SENSOR_SERIAL = 'Serial Number'
+
+SENSOR_TYPE_MAIN = 'Main'
+SENSOR_TYPE_ROOM = 'Room'
 
 SP_STATE = "State"
 SP_TEMP = "Temperature"
 SP_DATE = "Date"
 SP_TARGET = "Target"
-SP_TYPE = "Type"
 SP_RAMP = "Ramp"
 SP_SAMPLING = "Sampling"
 # The tolerances how many degrees the temperature is off before starting to heat or cool

@@ -6,7 +6,7 @@ from typing import List, Tuple, Union
 import matplotlib.dates
 import matplotlib.pyplot
 
-from utilities.constants import SP_TEMP, SP_DATE, SP_TYPE, SP_TARGET, SP_RAMP
+from utilities.constants import SP_TEMP, SP_DATE, TYPE, SP_TARGET, SP_RAMP
 
 TIME_STAMP_FORMAT = '%d/%m/%Y %H:%M'
 
@@ -69,7 +69,7 @@ class SetPoint:
     def to_json(self) -> dict:
         json = {SP_DATE: self.date.strftime(TIME_STAMP_FORMAT), SP_TEMP: self.temp}
         if self.type is SetPointType.RAMP:
-            json[SP_TYPE] = SP_RAMP
+            json[TYPE] = SP_RAMP
 
         return json
 
@@ -77,7 +77,7 @@ class SetPoint:
 def SetPointFromJSON(json: dict) -> SetPoint:
     temp = json[SP_TARGET]
     date = datetime.strptime(json[SP_DATE], TIME_STAMP_FORMAT)
-    if SP_TYPE in json:
+    if TYPE in json:
         set_point_type = SetPointType.RAMP
     else:
         set_point_type = SetPointType.CRASH

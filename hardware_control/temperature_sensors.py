@@ -2,7 +2,7 @@ import time
 
 # noinspection PyUnresolvedReferences
 from systemd import journal
-from utilities.constants import CFG_SENSORS, ERROR_NO_SENSORS
+from utilities.constants import CFG_SENSORS, ERROR_NO_SENSORS, CFG_SENSOR_SERIAL, NAME, TYPE
 
 
 def sensor_location(sensor_id: str):
@@ -23,9 +23,9 @@ def read_temps(config: dict) -> dict:
     temperatures = dict()
     for sensor in config[CFG_SENSORS]:
         try:
-            file = sensor_location(config[CFG_SENSORS][sensor])
+            file = sensor_location(sensor[CFG_SENSOR_SERIAL])
             temp = str(read_temp(file))
-            temperatures[sensor] = temp
+            temperatures[sensor[NAME]] = temp
         except Exception as e:
             journal.write("Failed to get reading '" + sensor + "':", str(e))
 
@@ -37,16 +37,35 @@ def read_temps(config: dict) -> dict:
     return temperatures
 
 
-def check_sensors_are_present(config_dictionary: dict, *sensors: str):
+def get_location_for_sensor(config_dictionary: dict, required_sensor_type: str) -> str:
     """
-    Checks if the given dictionary contains the given sensors.
+    For a given sensor type, return the on disk location of the sensor data
     """
     if CFG_SENSORS not in config_dictionary:
         raise Exception("No 'Temperature sensors' entry found in config.json file!")
 
-    for sensor in sensors:
-        if sensor not in config_dictionary[CFG_SENSORS]:
-            raise Exception(sensor + " sensor location not found in config.json file!")
+    for sensor in config_dictionary[CFG_SENSORS]:
+        if sensor[TYPE] is required_sensor_type:
+            return sensor_location(sensor[CFG_SENSOR_SERIAL])
+
+    raise Exception(required_sensor_type + " sensor not found in config.json file!")
+
+
+def check_sensor_types_are_present(config_dictionary: dict, *sensor_types: str):
+    """
+    Checks if the given dictionary contains the given sensor types.
+    """
+    if CFG_SENSORS not in config_dictionary:
+        raise Exception("No 'Temperature sensors' entry found in config.json file!")
+
+    for sensor_type in sensor_types:
+        failed = True
+        for sensor in config_dictionary[CFG_SENSORS]:
+            if sensor[TYPE] is type:
+                failed = False
+
+        if failed:
+            raise Exception(sensor_type + " sensor not found in config.json file!")
 
 
 def read_temp_raw(device_file):

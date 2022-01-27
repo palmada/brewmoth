@@ -5,7 +5,7 @@ from typing import List
 import requests
 
 from hardware_control.temperature_sensors import *
-from utilities.constants import CFG_NAME, CFG_BREWFATHER
+from utilities.constants import NAME, CFG_BREWFATHER
 from utilities.time_temp_parser import SetPointType, SetPoint, sort_set_points
 # noinspection PyUnresolvedReferences
 from systemd import journal
@@ -24,7 +24,7 @@ class BrewFatherUpdater(Thread):
         self.setDaemon(True)
         self.config = config
 
-        json["name"] = config[CFG_NAME]  # this will be the ID in Brewfather
+        json["name"] = config[NAME]  # this will be the ID in Brewfather
         journal.write("Did initialize BrewFatherUpdater")
 
     def run(self) -> None:
@@ -41,7 +41,6 @@ class BrewFatherUpdater(Thread):
                             # If so, use the brewfather name instead of the user readable name
                             json[self.config[CFG_BREWFATHER][temperature]] = temperatures[temperature]
 
-                    journal.write("Sending " + str(json))
                     requests.post(url, data=json)
                     time.sleep(900)
                 except Exception as e:

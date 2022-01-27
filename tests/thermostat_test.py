@@ -7,8 +7,9 @@ from pathlib import Path
 
 from hardware_control.fan_control import set_fan_speed
 from hardware_control.peltier_control import SoftwarePeltierDirectControl
-from hardware_control.temperature_sensors import read_temp, sensor_location, check_sensors_are_present
-from utilities.constants import READS_FOLDER, CONFIG_FILE, SENSOR_TEMP, SENSOR_ROOM, CFG_SENSORS
+from hardware_control.temperature_sensors import read_temp, check_sensor_types_are_present, \
+    get_location_for_sensor
+from utilities.constants import READS_FOLDER, CONFIG_FILE, SENSOR_TYPE_MAIN, SENSOR_TYPE_ROOM
 from utilities.formatters import timestamp
 
 if __name__ == '__main__':
@@ -44,10 +45,10 @@ if __name__ == '__main__':
     with open(CONFIG_FILE, 'r') as config_file:
         config_data = json.loads(config_file.read())
 
-    check_sensors_are_present(config_data, SENSOR_TEMP, SENSOR_ROOM)
+    check_sensor_types_are_present(config_data, SENSOR_TYPE_MAIN, SENSOR_TYPE_ROOM)
 
-    temp_file = sensor_location(config_data[CFG_SENSORS][SENSOR_TEMP])
-    room_temp_file = sensor_location(config_data[CFG_SENSORS][SENSOR_ROOM])
+    temp_file = get_location_for_sensor(config_data, SENSOR_TYPE_MAIN)
+    room_temp_file = get_location_for_sensor(config_data, SENSOR_TYPE_ROOM)
 
     try:
         next_read = time.time()
