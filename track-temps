@@ -5,7 +5,7 @@ import os
 import time
 from pathlib import Path
 
-from hardware_control.temperature_sensors import read_temps_to_dict
+from hardware_control.temperature_sensors import read_temps
 from utilities.constants import READS_FOLDER, CONFIG_FILE
 from utilities.formatters import timestamp
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
             current_time = time.time()
 
             if current_time > next_read:
-                temperatures = read_temps_to_dict(config_data)
+                temperatures = read_temps(config_data)
 
                 read = timestamp()
 

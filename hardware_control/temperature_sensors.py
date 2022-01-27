@@ -13,7 +13,7 @@ def sensor_location(sensor_id: str):
     return '/sys/bus/w1/devices/' + sensor_id + '/w1_slave'
 
 
-def read_temps_to_dict(config: dict) -> dict:
+def read_temps(config: dict) -> dict:
     """
     Returns a dictionary of temperature reads, with sensor names as the keys.
 

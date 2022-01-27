@@ -111,7 +111,7 @@ def hello():
                 return return_message
 
             elif data == CLI_GET_TEMP:
-                temperatures = read_temps_to_dict(CONFIG_DATA)
+                temperatures = read_temps(CONFIG_DATA)
 
                 journal.write("Received request for temps, returning " + str(temperatures))
 

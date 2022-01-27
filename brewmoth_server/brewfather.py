@@ -29,7 +29,7 @@ class BrewFatherUpdater(Thread):
         try:
             while self.keepAlive:
                 try:
-                    temperatures = read_temps_to_dict(self.config)
+                    temperatures = read_temps(self.config)
 
                     for temperature in temperatures:
                         json[temperature] = temperatures[temperature]
