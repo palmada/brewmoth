@@ -92,3 +92,10 @@ you can use the following commands from the brewmoth directory:
 You can run any of the above commands with `-h` after to get more information on how and why to use them.
 
 Note, for `track-temps` you might need to first activate the virtual environment (see above).
+
+### Access command from anywhere
+
+You can add the brewmoth directory to PATH To allow the above commands to be called from anywhere.
+1. Call `sudo nano ~/.profile` to start editing the `.profile` file
+2. Add the following line `PATH=~/opt/bin:$PATH` to the end of the file.
+3. Exit with `ctrl+x`, select `y` and accept.
