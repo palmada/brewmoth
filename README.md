@@ -30,32 +30,13 @@ These will be a long string starting with some numbers, not anything that starts
    The name of each sensor is completely up to you.
    If you want to have the moth update brewfather, add an entry like this: `"Brewfather": True`
 5. `cd /sys/bus/w1/devices/` and list the thermometers
-8. Create Nginx configuration file:
+8. If using Nginx, link to configuration file, test the configuration works and restart nginx:
 ```shell
-sudo nano /etc/nginx/sites-available/brewmoth
-```
-9. And copy the following:
-```shell
-server {
-    listen 6666;
-    server_name 127.0.0.1;
-    
-    location / {
-        include         uwsgi_params;
-        uwsgi_pass      unix:/brewmoth/brewmoth.sock;
-    }
-}
-```
-10. `Ctrl+X` to leave, press `y` to choose to save then `Enter`
-11. Enable the site:
-```shell
-sudo ln -s /etc/nginx/sites-available/brewmoth /etc/nginx/sites-enabled/brewmoth
-```
-11. Test file and restart nginx:
-```shell
+sudo ln -s /brewmoth/brewmoth_server/brewmoth.nginx /etc/nginx/sites-enabled/brewmoth
 sudo nginx -t
 sudo service nginx restart
 ```
+If not using nginx, you'll need to set up another service to connect to the unix socket that brewmoth is listening on.
 
 ## Run from command-line
 To troubleshoot, it's best to start brewmoth using the command-line. 
