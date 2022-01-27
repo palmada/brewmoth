@@ -1,9 +1,9 @@
 {
   "Name": "Mini-moth",
   "Temperature sensors" : {
-    "temp" : "28-3c01b5562b43"
+    "Temperature" : "28-3c01b5562b43"
   },
   "Brewfather" : {
-    "temp" : "temp"
+    "Temperature" : "temp"
   }
 }

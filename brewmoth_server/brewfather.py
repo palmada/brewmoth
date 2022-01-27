@@ -5,7 +5,7 @@ from typing import List
 import requests
 
 from hardware_control.temperature_sensors import *
-from utilities.constants import CFG_NAME
+from utilities.constants import CFG_NAME, CFG_BREWFATHER
 from utilities.time_temp_parser import SetPointType, SetPoint, sort_set_points
 # noinspection PyUnresolvedReferences
 from systemd import journal
@@ -34,9 +34,14 @@ class BrewFatherUpdater(Thread):
                 try:
                     temperatures = read_temps(self.config)
 
+                    # The temperature name is read as the user readable name...
                     for temperature in temperatures:
-                        json[temperature] = temperatures[temperature]
+                        # We check if we've configured that sensor name to match one on brewfather...
+                        if temperature in self.config[CFG_BREWFATHER]:
+                            # If so, use the brewfather name instead of the user readable name
+                            json[self.config[CFG_BREWFATHER][temperature]] = temperatures[temperature]
 
+                    journal.write("Sending " + str(json))
                     requests.post(url, data=json)
                     time.sleep(900)
                 except Exception as e:

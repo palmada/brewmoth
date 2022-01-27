@@ -8,8 +8,8 @@ CFG_SENSORS = "Temperature sensors"
 CFG_BREWFATHER = "Brewfather"
 
 # Default sensor names
-SENSOR_TEMP = "temp"
-SENSOR_ROOM = "ext_temp"  # Mirrors brewfather's name
+SENSOR_TEMP = "Fermentation Temperature"
+SENSOR_ROOM = "Room Temperature"
 
 SP_STATE = "State"
 SP_TEMP = "Temperature"
@@ -29,7 +29,5 @@ CLI_GET_TEMP = 'Get temperatures'
 CLI_SET_TEMP = 'Set temperature'
 CLI_RECORD = 'Record thermostat changes'
 CLI_OFF = 'Turn off temperature control'
-CLI_FRIDGE = 'Fridge temperature'
-CLI_ROOM = 'Room temperature'
 
 ERROR_NO_SENSORS = "Could not find temperature sensor settings in config.json"
