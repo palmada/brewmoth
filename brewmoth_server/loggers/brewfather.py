@@ -1,11 +1,11 @@
 from datetime import datetime
-from threading import Thread
 from typing import List
 
 import requests
 # noinspection PyUnresolvedReferences
 from systemd import journal
 
+from brewmoth_server.logging import Logger
 from hardware_control.temperature_sensors import *
 from utilities.constants import NAME, SENSOR_TYPE_MAIN, SENSOR_TYPE_ROOM
 from utilities.time_temp_parser import SetPointType, SetPoint, sort_set_points
@@ -16,12 +16,10 @@ json = {
 }
 
 
-class BrewFatherUpdater(Thread):
-    keepAlive: bool = True
+class BrewFatherLogging(Logger):
 
     def __init__(self, config: dict):
         super().__init__()
-        self.setDaemon(True)
         self.config = config
 
         for sensor in config[CFG_SENSORS]:
@@ -34,29 +32,17 @@ class BrewFatherUpdater(Thread):
             raise Exception("BrewFatherUpdater could not find the main temperature sensor information")
 
         json["name"] = config[NAME]  # this will be the ID in Brewfather
-        journal.write("Did initialize BrewFatherUpdater")
+        journal.write("Initialized BrewFatherUpdater")
 
-    def run(self) -> None:
+    def log(self, temperatures: dict):
 
-        try:
-            while self.keepAlive:
-                try:
-                    temperatures = read_temps(self.config)
+        for temperature in temperatures:
+            if temperature == self.main_sensor:
+                json["temp"] = temperatures[temperature]
+            if hasattr(self, 'room_sensor') and temperature == self.room_sensor:
+                json["ext_temp"] = temperatures[temperature]
 
-                    # We find now the main and room sensor, if present
-                    for temperature in temperatures:
-                        if temperature == self.main_sensor:
-                            json["temp"] = temperatures[temperature]
-                        if hasattr(self, 'room_sensor') and temperature == self.room_sensor:
-                            json["ext_temp"] = temperatures[temperature]
-
-                    requests.post(url, data=json)
-                    time.sleep(900)
-                except Exception as e:
-                    print("Error:", str(e))
-
-        except Exception as e:
-            print("Error:", str(e))
+        requests.post(url, data=json)
 
 
 def brewfather_data_import(received_json: dict) -> List[SetPoint]:

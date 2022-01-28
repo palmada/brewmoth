@@ -1,7 +1,7 @@
 import json
 import sys
 
-from brewmoth_server.brewfather import brewfather_data_import
+from brewmoth_server.loggers.brewfather import brewfather_data_import
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

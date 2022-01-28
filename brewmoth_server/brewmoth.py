@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 from flask import Flask, request
 # noinspection PyUnresolvedReferences
@@ -7,7 +7,8 @@ from flask_cors import CORS
 # noinspection PyUnresolvedReferences
 from systemd import journal
 
-from brewmoth_server.brewfather import BrewFatherUpdater, brewfather_data_import
+from brewmoth_server.loggers.brewfather import BrewFatherLogging, brewfather_data_import
+from brewmoth_server.logging import UpdateThread
 from hardware_control.temperature_sensors import *
 from hardware_control.thermostat import read_settings_file, write_to_settings_file
 from utilities.constants import *
@@ -21,21 +22,25 @@ app = Flask(__name__)
 CORS(app)
 
 
-def initialize(brewfather: bool = True):
+def initialize(start_brewfather: bool = True):
     """
     Must be called before the Flask app is started.
 
-    :param brewfather: Whether or not to start the thread to send updates to Brewfather
+    :param start_brewfather: Whether or not to start the thread to send updates to Brewfather
     """
     with open(CONFIG_FILE, 'r') as config_file:
         file_contents = config_file.read()
         global CONFIG_DATA
         CONFIG_DATA = json.loads(file_contents)
 
-    if brewfather and CFG_BREWFATHER in CONFIG_DATA:
-        journal.write("Will initialize BrewFatherUpdater")
-        updater = BrewFatherUpdater(CONFIG_DATA)
-        updater.start()
+    loggers = []
+
+    if start_brewfather and CFG_BREWFATHER in CONFIG_DATA:
+        loggers.append(BrewFatherLogging(CONFIG_DATA))
+
+    if loggers:
+        update_thread = UpdateThread(CONFIG_DATA, loggers)
+        update_thread.start()
 
     journal.write("Initialized with config: \n" + json.dumps(CONFIG_DATA, indent=4))
 
@@ -143,4 +148,3 @@ def hello():
         message = "Exception: " + str(e)
         journal.write(message)
         return message
-

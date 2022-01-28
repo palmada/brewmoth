@@ -27,12 +27,19 @@ Once the Wi-Fi details can be added you can use `ssh` to connect to the raspberr
 
 ## Full installation
 
-1. Install the following:
+1. Create the directory but change `username` to your own username:
 ```shell
-sudo apt update;
+sudo mkdir /brewmoth
+sudo chown username:username /brewmoth
+```
+2. Install the following:
+```shell
+sudo apt update
+sudo apt upgrade
 sudo apt install python3 python3-pip nginx libatlas-base-dev libopenjp2-7 pigpio
 sudo apt update
 sudo apt install libatlas-base-dev
+sudo apt autoremove
 sudo pip3 install virtualenv
 sudo systemctl enable pigpiod
 sudo service pigpiod start
@@ -54,7 +61,6 @@ These will be a long string starting with some numbers, not anything that starts
    The serial portion is where you add the string identified with the above command.
    The name of each sensor is completely up to you.
    If you want to have the moth update brewfather, add an entry like this: `"Brewfather": True`
-5. `cd /sys/bus/w1/devices/` and list the thermometers
 8. If using Nginx, link to configuration file, test the configuration works and restart nginx:
 ```shell
 sudo ln -s /brewmoth/brewmoth_server/brewmoth.nginx /etc/nginx/sites-enabled/brewmoth
