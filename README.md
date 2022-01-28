@@ -35,6 +35,7 @@ sudo apt update
 sudo apt install libatlas-base-dev
 sudo pip3 install virtualenv
 sudo systemctl enable pigpiod
+sudo service pigpiod start
 ```
 2. Copy repository to `/brewmoth`
 3. Create a virtual environment with following requirements
