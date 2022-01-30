@@ -9,6 +9,7 @@ Group=www-data
 WorkingDirectory=/brewmoth/
 Environment="PATH=/brewmoth/brewvenv/bin"
 ExecStart=/brewmoth/brewvenv/bin/uwsgi --ini /brewmoth/brewmoth_server/brewmoth-wsgi.ini
+KillSignal=SIGQUIT
 
 [Install]
 WantedBy=multi-user.target
