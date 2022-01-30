@@ -152,6 +152,9 @@ class Thermostat:
                             self.peltier_control.set_state(state)
                             previous_state = state
                         next_read = current_time + self.sampling
+
+                time.sleep(0.5)   # This allows the thread to check for a kill signal
+
         except BaseException as e:
             journal.write(traceback.format_exc(e))
             journal.write("Exception occurred:" + str(e))

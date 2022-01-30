@@ -2,6 +2,8 @@ import time
 from threading import Thread
 from typing import List
 
+# noinspection PyUnresolvedReferences
+from systemd import journal
 from hardware_control.temperature_sensors import read_temps
 
 
@@ -24,16 +26,21 @@ class UpdateThread(Thread):
     def run(self) -> None:
 
         try:
+            next_read = time.time()
             while self.keepAlive:
-                try:
-                    temperatures = read_temps(self.config)
+                current_time = time.time()
+                if current_time > next_read:
+                    try:
+                        temperatures = read_temps(self.config)
 
-                    for logger in self.loggers:
-                        logger.log(temperatures)
+                        for logger in self.loggers:
+                            logger.log(temperatures)
 
-                    time.sleep(self.delay_ms)
-                except Exception as e:
-                    print("Error:", str(e))
+                        next_read = current_time + self.delay_ms
+                    except Exception as e:
+                        print("Error:", str(e))
+
+                time.sleep(0.5)  # This allows the thread to check for a kill signal
 
         except Exception as e:
             print("Error:", str(e))
