@@ -45,7 +45,7 @@ def get_location_for_sensor(config_dictionary: dict, required_sensor_type: str) 
         raise Exception("No 'Temperature sensors' entry found in config.json file!")
 
     for sensor in config_dictionary[CFG_SENSORS]:
-        if sensor[TYPE] is required_sensor_type:
+        if sensor[TYPE] == required_sensor_type:
             return sensor_location(sensor[CFG_SENSOR_SERIAL])
 
     raise Exception(required_sensor_type + " sensor not found in config.json file!")
@@ -61,7 +61,8 @@ def check_sensor_types_are_present(config_dictionary: dict, *sensor_types: str):
     for sensor_type in sensor_types:
         failed = True
         for sensor in config_dictionary[CFG_SENSORS]:
-            if sensor[TYPE] is type:
+
+            if sensor[TYPE] == sensor_type:
                 failed = False
 
         if failed:
