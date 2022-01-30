@@ -4,6 +4,9 @@ import traceback
 from hardware_control.thermostat import Thermostat
 from utilities.constants import CONFIG_FILE
 
+# You might be tempted to put this in a sub-package, but it needs to be here to function properly.
+# The thermostat also always needs it's own service so it stops cleanly.
+
 if __name__ == '__main__':
 
     with open(CONFIG_FILE, 'r') as config_file:

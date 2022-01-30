@@ -259,5 +259,3 @@ def get_temperature_profile(set_points: List[SetPoint], interval: int) -> Tuple[
     temps.append(last.temp)
 
     return times, temps
-
-

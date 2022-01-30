@@ -100,6 +100,16 @@ sudo service enable brewmoth
 sudo service brewmoth restart
 ````
 
+#### Optional services
+
+If you want to enable temperature control you need to enable the thermostat service:
+```shell
+sudo ln -s /brewmoth/brewmoth_server/brewmoth-thermostat.service /etc/systemd/system/brewmoth-thermostat.service 
+sudo systemctl daemon-reload
+sudo systemctl enable brewmoth-thermostat
+sudo service brewmoth-thermostat restart
+```
+
 ### Control service
 
 You can now use normal linux service commands like the ones below:
