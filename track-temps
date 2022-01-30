@@ -3,10 +3,12 @@ import argparse
 import json
 import os
 import time
+import requests
+from json import JSONDecodeError
 from pathlib import Path
 
-from hardware_control.temperature_sensors import read_temps
-from utilities.constants import READS_FOLDER, CONFIG_FILE
+
+from utilities.constants import READS_FOLDER, CLI_URL, CLI_GET_TEMP, CONFIG_FILE, CFG_SENSORS, NAME
 from utilities.formatters import timestamp
 
 if __name__ == '__main__':
@@ -17,17 +19,23 @@ if __name__ == '__main__':
     args = parser.parse_args()
     frequency = float(args.frequency)
 
-    os.system('modprobe w1-gpio')
-    os.system('modprobe w1-therm')
+    with open(CONFIG_FILE, 'r') as config_file:
+        file_contents = config_file.read()
+        config = json.loads(file_contents)
 
-    print("Time, Temp, Room temp")
+    if CFG_SENSORS not in config or not config[CFG_SENSORS]:
+        raise Exception("Error: no temperature configuration found")
+
+    header = "Time"
+
+    for sensor in config[CFG_SENSORS]:
+        header += ", " + sensor[NAME]
+
+    print(header)
 
     Path(READS_FOLDER).mkdir(parents=True, exist_ok=True)
 
     file = open(os.path.join(READS_FOLDER, timestamp() + ".csv"), "w")
-
-    with open(CONFIG_FILE, 'r') as config_file:
-        config_data = json.loads(config_file.read())
 
     try:
         next_read = time.time()
@@ -35,17 +43,20 @@ if __name__ == '__main__':
             current_time = time.time()
 
             if current_time > next_read:
-                temperatures = read_temps(config_data)
+                response = requests.post(CLI_URL, json=CLI_GET_TEMP)
+                try:
+                    temperatures = response.json()
+                    read = timestamp()
 
-                read = timestamp()
+                    for temperature in temperatures:
+                        read += ", " + str(temperatures[temperature])
 
-                for temperature in temperatures:
-                    read += ", " + temperature + ": " + str(temperatures[temperature])
-
-                print(read)
-                read += "\n"
-                file.write(read)
-                next_read = current_time + frequency
+                    print(read)
+                    read += "\n"
+                    file.write(read)
+                    next_read = current_time + frequency
+                except JSONDecodeError as e:
+                    print("ERROR: Response was: " + response.content.decode("utf-8"))
 
     except KeyboardInterrupt:
         print("Exiting.")
