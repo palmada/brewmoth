@@ -73,12 +73,6 @@ class Thermostat:
         self.peltier_control = SoftwarePeltierDirectControl(control_fans=False)
         self.set_state(False)  # Always best to ensure we start with everything off
 
-        journal.write("Started thermostat with " +
-                      str(self.target_temp) + "C set-point, " +
-                      str(self.cooling_threshold) + "C cooling threshold, and " +
-                      str(self.heating_threshold) + "C heating threshold, and " +
-                      str(self.sampling) + " seconds sampling")
-
     def __enter__(self):
         journal.write("Thermostat thread starting")
         self.process = Process(target=self.run)
@@ -108,8 +102,11 @@ class Thermostat:
             previous_state = SoftwarePeltierDirectControl.State.OFF
             fans_on = False
 
-            message = "Started control loop"
-            journal.write(message)
+            journal.write("Initialized thermostat with " +
+                          str(self.target_temp) + "C set-point, " +
+                          str(self.cooling_threshold) + "C cooling threshold, and " +
+                          str(self.heating_threshold) + "C heating threshold, and " +
+                          str(self.sampling) + " seconds sampling")
 
             next_read = time.time()
             while self.alive:
@@ -159,6 +156,6 @@ class Thermostat:
             journal.write(traceback.format_exc(e))
             journal.write("Exception occurred:" + str(e))
         finally:
-            message = "Control loop stopped"
+            message = "Thermostat Control loop stopped"
             journal.write(message)
             self.set_state(False)

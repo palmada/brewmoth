@@ -42,5 +42,7 @@ class UpdateThread(Thread):
 
                 time.sleep(0.5)  # This allows the thread to check for a kill signal
 
+            journal.write("Logging thread finished")
+
         except Exception as e:
             print("Error:", str(e))
