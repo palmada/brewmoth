@@ -12,10 +12,10 @@ pin_control = pigpio.pi()
 
 class SoftwarePeltierDirectControl:
     # Pins for cooling
-    cooling_pin_numbers = [5, 27]
+    heating_pin_numbers = [5, 27]
 
     # Pins for heating
-    heating_pin_numbers = [22, 25]
+    cooling_pin_numbers = [22, 25]
 
     class State(Enum):
         HEAT = 1
