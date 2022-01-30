@@ -3,9 +3,6 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Tuple, Union
 
-import matplotlib.dates
-import matplotlib.pyplot
-
 from utilities.constants import SP_TEMP, SP_DATE, TYPE, SP_TARGET, SP_RAMP
 
 TIME_STAMP_FORMAT = '%d/%m/%Y %H:%M'
@@ -264,15 +261,3 @@ def get_temperature_profile(set_points: List[SetPoint], interval: int) -> Tuple[
     return times, temps
 
 
-if __name__ == '__main__':
-    list_set_points = parse_json_temps(example_json)
-
-    print("Temperature set point for right now is: ", get_temp_for_time(list_set_points, datetime.now()))
-
-    if len(list_set_points) > 1:
-        profile_times, profile_temps = get_temperature_profile(list_set_points, 15)
-
-        dates = matplotlib.dates.date2num(profile_times)
-        matplotlib.pyplot.plot_date(dates, profile_temps, marker='', color='red', linestyle='solid')
-
-        matplotlib.pyplot.show()
