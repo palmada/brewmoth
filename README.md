@@ -34,11 +34,11 @@ sudo chown username:username /brewmoth
 ```
 2. Install the following:
 ```shell
+sudo rpi-update
 sudo apt update
 sudo apt upgrade
 sudo apt install python3 python3-pip nginx libatlas-base-dev libopenjp2-7 pigpio
 sudo apt update
-sudo apt install libatlas-base-dev
 sudo apt autoremove
 sudo pip3 install virtualenv
 sudo systemctl enable pigpiod
@@ -49,8 +49,8 @@ sudo service pigpiod start
 ```shell
 cd /brewmoth
 virtualenv brewvenv
-source brewvenv/bin/activate
-pip3 install uwsgi flask flask_cors systemd requests numpy scipy matplotlib pigpio gpiozero
+source /brewmoth/brewvenv/bin/activate
+pip3 install uwsgi flask flask_cors systemd requests pigpio gpiozero matplotlib
 deactivate
 ```
 3. `ls /sys/bus/w1/devices/` to get the serial numbers of any installed 1-wire type temperature sensors. 
@@ -94,7 +94,7 @@ Once you know everything is great, you can configure it the brewmoth service.
 To configure it as a service, stop any running brewmoth instance that you may have started through the command-line,
 and then activate the service file:
 ```shell
-ln -s /etc/systemd/system/brewmoth.service /brewmoth/brewmoth_server/brewmoth.service`
+ln -s /etc/systemd/system/brewmoth.service /brewmoth/brewmoth_server/brewmoth.service
 sudo systemctl daemon-reload
 sudo service enable brewmoth
 sudo service brewmoth restart
