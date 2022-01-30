@@ -94,9 +94,9 @@ Once you know everything is great, you can configure it the brewmoth service.
 To configure it as a service, stop any running brewmoth instance that you may have started through the command-line,
 and then activate the service file:
 ```shell
-ln -s /etc/systemd/system/brewmoth.service /brewmoth/brewmoth_server/brewmoth.service
+sudo ln -s /brewmoth/brewmoth_server/brewmoth.service /etc/systemd/system/brewmoth.service
 sudo systemctl daemon-reload
-sudo service enable brewmoth
+sudo systemctl enable brewmoth
 sudo service brewmoth restart
 ````
 
