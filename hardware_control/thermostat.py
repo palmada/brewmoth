@@ -72,6 +72,7 @@ class Thermostat:
         self.on = False
         self.peltier_control = SoftwarePeltierDirectControl(control_fans=False)
         self.set_state(False)  # Always best to ensure we start with everything off
+        self.previous_state = SoftwarePeltierDirectControl.State.OFF
 
     def __enter__(self):
         journal.write("Thermostat thread starting")
@@ -91,6 +92,7 @@ class Thermostat:
         self.on = on
         if not on:
             self.peltier_control.set_state(SoftwarePeltierDirectControl.State.OFF)
+            self.previous_state = SoftwarePeltierDirectControl.State.OFF
             set_fan_speed(0)
             journal.write("Thermostat control turned off")
         else:
@@ -106,9 +108,6 @@ class Thermostat:
 
     def run(self) -> None:
         try:
-            previous_state = SoftwarePeltierDirectControl.State.OFF
-            fans_on = False
-
             journal.write("Initialized thermostat with " +
                           str(self.target_temp) + "C set-point, " +
                           str(self.cooling_threshold) + "C cooling threshold, and " +
@@ -118,28 +117,26 @@ class Thermostat:
             next_read = time.time()
             while self.alive:
                 current_time = time.time()
+
                 if current_time > next_read:
-
                     settings = read_settings_file()
+                    read_state = settings[SP_STATE] == SP_ON
 
-                    self.on = settings[SP_STATE] == SP_ON
-
-                    if fans_on is not self.on:
-                        if fans_on:
-                            set_fan_speed(0)
-                            self.peltier_control.set_state(SoftwarePeltierDirectControl.State.OFF)
-                        else:
-                            set_fan_speed(0.4)
-                        fans_on = self.on
-
-                    # Read temperature profile from file and get target for current date/time
-                    self.target_temp = get_temp_for_time(parse_json_temps(settings), datetime.now())
-
-                    self.heating_threshold = self.target_temp - settings[SP_HEAT_TOLERANCE]
-                    self.cooling_threshold = self.target_temp + settings[SP_COOL_TOLERANCE]
-                    self.sampling = settings[SP_SAMPLING]
+                    if read_state != self.on:
+                        self.set_state(read_state)
 
                     if self.on:
+                        # Read temperature profile from file and get target for current date/time
+
+                        temp_set_point = get_temp_for_time(parse_json_temps(settings), datetime.now())
+                        if temp_set_point != self.target_temp:
+                            journal.write("Changed temperature set point to " + str(temp_set_point))
+                            self.target_temp = temp_set_point
+
+                        self.heating_threshold = self.target_temp - settings[SP_HEAT_TOLERANCE]
+                        self.cooling_threshold = self.target_temp + settings[SP_COOL_TOLERANCE]
+                        self.sampling = settings[SP_SAMPLING]
+
                         current_temp = read_temp(self.temp_file)
 
                         if not self.heating_threshold <= current_temp <= self.cooling_threshold:
@@ -152,12 +149,13 @@ class Thermostat:
                         else:
                             state = SoftwarePeltierDirectControl.State.OFF
 
-                        if previous_state != state:
+                        if self.previous_state != state:
                             self.peltier_control.set_state(state)
-                            previous_state = state
+                            self.previous_state = state
+                            journal.write("Set peltier state to " + str(state))
                         next_read = current_time + self.sampling
 
-                time.sleep(0.5)   # This allows the thread to check for a kill signal
+                time.sleep(0.5)  # This allows the thread to check for a kill signal
 
         except BaseException as e:
             journal.write(traceback.format_exc(e))
