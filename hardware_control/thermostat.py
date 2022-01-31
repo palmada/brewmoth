@@ -83,11 +83,18 @@ class Thermostat:
         self.kill()
 
     def set_state(self, on: bool):
+        """
+        Sets self.on variable and sets fan state accordingly
+
+        :param on: Whether or not the thermostat should control the temperature
+        """
         self.on = on
         if not on:
             self.peltier_control.set_state(SoftwarePeltierDirectControl.State.OFF)
             set_fan_speed(0)
+            journal.write("Thermostat control turned off")
         else:
+            journal.write("Thermostat control turned on")
             set_fan_speed(0.4)
 
     def kill(self):
