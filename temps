@@ -8,9 +8,8 @@ import requests
 from utilities.constants import *
 
 if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("temp", nargs='?', help="Temperature to set the fridge to in Celsius, or off to turn off.")
+    parser = argparse.ArgumentParser(description="Gets, or sets, the temperature of the brewmoth.")
+    parser.add_argument("temp", nargs='?', help="Temperature to set the fridge to in Celsius, or 'off' to turn off.")
     parser.add_argument("-v", "--verbose", help="Print full exception stack trace.", action='store_true')
     parser.add_argument("-r", "--record", help="Tell thermostat to store changes to the peltiers on disk.",
                         action='store_true')
