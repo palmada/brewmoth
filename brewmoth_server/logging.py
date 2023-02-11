@@ -5,6 +5,9 @@ from typing import List
 # noinspection PyUnresolvedReferences
 from systemd import journal
 from hardware_control.temperature_sensors import read_temps
+from utilities.constants import CFG_WRITE_TO_DISK, NAME
+from utilities.file_handling import create_time_stamped_csv
+from utilities.formatters import timestamp
 
 
 class Logger:
@@ -22,6 +25,11 @@ class UpdateThread(Thread):
         self.loggers = loggers
         self.setDaemon(True)
         self.config = config
+        self.write_to_disk = CFG_WRITE_TO_DISK in config
+        if self.write_to_disk:
+            journal.write("Will write data to disk")
+            self.csv = create_time_stamped_csv()
+            journal.write("Created file " + self.csv.name)
 
     def run(self) -> None:
 
@@ -36,6 +44,19 @@ class UpdateThread(Thread):
                         for logger in self.loggers:
                             logger.log(temperatures)
 
+                        if self.write_to_disk:
+                            read = timestamp() + "," + self.config[NAME]
+
+                            for temperature in temperatures:
+                                read += "," + str(temperatures[temperature])
+
+                            read += "\n"
+                            self.csv.write(read)
+                            # `File` is buffered and therefore won't write straight to disk.
+                            # For debugging and making sure we don't miss any reads,
+                            # we force writer to write right-away with flush
+                            self.csv.flush()
+
                         next_read = current_time + self.delay_ms
                     except Exception as e:
                         print("Error:", str(e))
@@ -46,3 +67,6 @@ class UpdateThread(Thread):
 
         except Exception as e:
             print("Error:", str(e))
+        finally:
+            if self.write_to_disk:
+                self.csv.close()
