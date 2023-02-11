@@ -120,7 +120,7 @@ class Thermostat:
 
                 if current_time > next_read:
                     settings = read_settings_file()
-                    read_state = settings[SP_STATE] == SP_ON
+                    read_state = settings[SP_STATE] == ON
 
                     if read_state != self.on:
                         self.set_state(read_state)

@@ -99,10 +99,10 @@ def hello():
 
                 settings = read_settings_file()
 
-                thermostat_on = settings[SP_STATE] == SP_ON
+                thermostat_on = settings[SP_STATE] == ON
 
                 settings[SP_TEMP] = set_point
-                settings[SP_STATE] = SP_ON
+                settings[SP_STATE] = ON
 
                 if not thermostat_on:
                     return_message = "Set temperature control to " + str(set_point)
@@ -123,10 +123,10 @@ def hello():
                 return temperatures
             elif data == CLI_OFF:
                 settings = read_settings_file()
-                thermostat_on = settings[SP_STATE] == SP_ON
+                thermostat_on = settings[SP_STATE] == ON
 
                 if thermostat_on:
-                    settings[SP_STATE] = SP_OFF
+                    settings[SP_STATE] = OFF
                     write_to_settings_file(settings)
                     return_message = "Turned off temperature control."
                 else:
