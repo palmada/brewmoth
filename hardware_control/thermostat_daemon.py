@@ -22,4 +22,4 @@ if __name__ == '__main__':
         print("Thermostat was interrupted.")
     except BaseException as e:
         print(e)
-        traceback.print_exc(e)
+        traceback.print_exc()
