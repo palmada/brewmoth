@@ -89,9 +89,9 @@ class Thermostat:
 
     def set_state(self, on: bool):
         """
-        Sets self.on variable and sets fan state accordingly
+        Sets on field and sets fan state accordingly
 
-        :param on: Whether or not the thermostat should control the temperature
+        :param on: Whether the thermostat should control the temperature
         """
         self.on = on
         if not on:

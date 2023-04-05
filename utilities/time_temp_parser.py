@@ -197,7 +197,7 @@ def get_temp_for_time(set_points: List[SetPoint], current_time: datetime):
 
             previous_set_point = next_set_point
 
-        # If we've cycled through the points and we haven't found a temp, then likely
+        # If we've cycled through the points, and we haven't found a temp, then likely
         # the given time point refers to a point after the temperature profile.
         # In that case, we just use whatever was the last temperature set point,
         # which will be recorded in the previous_set_point variable

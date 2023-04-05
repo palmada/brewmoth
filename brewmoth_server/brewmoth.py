@@ -26,7 +26,7 @@ def initialize(start_brewfather: bool = True):
     """
     Must be called before the Flask app is started.
 
-    :param start_brewfather: Whether or not to start the thread to send updates to Brewfather
+    :param start_brewfather: Whether to start the thread to send updates to Brewfather
     """
     with open(CONFIG_FILE, 'r') as config_file:
         file_contents = config_file.read()

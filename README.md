@@ -1,7 +1,7 @@
 # Brewmoth
 
 ## The gist
-Brewmoth is a project to convert a Raspberry Pi into a general tool to assis with home-brewing,
+Brewmoth is a project to convert a Raspberry Pi into a general tool to assist with home-brewing,
 but can also be used more generally for temperature logging and control.
 
 ## Background
@@ -19,7 +19,7 @@ This is beyond the scope of this README, but here are some resources.
 There are two options:
 1. Edit the SD card on your normal computer to add your Wi-Fi details.
    [Here is an example guide on how to do this.](https://forums.raspberrypi.com/viewtopic.php?t=259894])
-2. Alternatively you can connect a USB hub with a key-board and mouse, and an HDMI monitor to add the Wi-Fi details
+2. Alternatively you can connect a USB hub with a keyboard and mouse, and an HDMI monitor to add the Wi-Fi details
    as normal
 
 Once the Wi-Fi details can be added you can use `ssh` to connect to the raspberry pi.
@@ -28,48 +28,48 @@ Once the Wi-Fi details can be added you can use `ssh` to connect to the raspberr
 ## Full installation
 
 1. Create the directory but change `username` to your own username:
-```shell
-sudo mkdir /brewmoth
-sudo chown username:username /brewmoth
-```
+   ```shell
+   sudo mkdir /brewmoth
+   sudo chown username:username /brewmoth
+   ```
 2. Install the following:
-```shell
-sudo rpi-update
-sudo apt update
-sudo apt upgrade
-sudo apt install python3 python3-pip nginx libatlas-base-dev libopenjp2-7 pigpio
-sudo apt update
-sudo apt autoremove
-sudo pip3 install virtualenv
-sudo systemctl enable pigpiod
-sudo service pigpiod start
-```
-2. Copy repository to `/brewmoth`
-3. Create a virtual environment with following requirements
-```shell
-cd /brewmoth
-virtualenv brewvenv
-source /brewmoth/brewvenv/bin/activate
-pip3 install uwsgi flask flask_cors systemd requests pigpio gpiozero matplotlib
-deactivate
-```
-3. `ls /sys/bus/w1/devices/` to get the serial numbers of any installed 1-wire type temperature sensors. 
-These will be a long string starting with some numbers, not anything that starts with `w1`  
-4. Copy `example-config.json` and set the properties like so:
+   ```shell
+   sudo rpi-update
+   sudo apt update
+   sudo apt upgrade
+   sudo apt install python3 python3-pip nginx libatlas-base-dev libopenjp2-7 pigpio
+   sudo apt update
+   sudo apt autoremove
+   sudo pip3 install virtualenv
+   sudo systemctl enable pigpiod
+   sudo service pigpiod start
+   ```
+3. Copy repository to `/brewmoth`
+4. Create a virtual environment with following requirements
+   ```shell
+   cd /brewmoth
+   virtualenv brewvenv
+   source /brewmoth/brewvenv/bin/activate
+   pip3 install uwsgi flask flask_cors systemd requests pigpio gpiozero matplotlib
+   deactivate
+   ```
+5. Type `ls /sys/bus/w1/devices/` to get the serial numbers of any installed 1-wire type temperature sensors. 
+   These will be a long string starting with some numbers, not anything that starts with `w1`  
+6. Copy `example-config.json` and set the properties like so:
    1. First, change the name as required.
    2. Second, edit the "Temperature sensors" section so there is at least one sensor of type "Main".
    The serial portion is where you add the string identified with the above command.
    The name of each sensor is completely up to you.
    If you want to have the moth update brewfather, add an entry like this: `"Brewfather": True`
-8. If using Nginx, link to configuration file, test the configuration works and restart nginx:
-```shell
-sudo ln -s /brewmoth/brewmoth_server/brewmoth.nginx /etc/nginx/sites-enabled/brewmoth
-sudo nginx -t
-sudo service nginx restart
-```
-If not using nginx, you'll need to set up another service to connect to the unix socket that brewmoth is listening on.
-
-You also can add the brewmoth directory to PATH To allow the above commands to be called from anywhere in the shell
+7. If using Nginx, link to configuration file, test the configuration works and restart nginx:
+   ```shell
+   sudo ln -s /brewmoth/brewmoth_server/brewmoth.nginx /etc/nginx/sites-enabled/brewmoth
+   sudo nginx -t
+   sudo service nginx restart
+   ```
+   If not using nginx, you'll need to set up another service to connect to the unix socket that brewmoth is listening on.
+   
+You also can add the brewmoth directory to PATH to allow the above commands to be called from anywhere in the shell
 1. Call `sudo nano ~/.profile` to start editing the `.profile` file
 2. Add the following line `PATH=~/opt/bin:$PATH` to the end of the file.
 3. Exit with `ctrl+x`, select `y` and accept.

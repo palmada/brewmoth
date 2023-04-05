@@ -13,7 +13,7 @@ class SlowPWM(Thread):
         """
         This class is meant to do PWM at very low frequencies of 2 pins simultaneously
 
-        :param pins: List of GPIO pin numbers to control
+        :param pins: List of GPIO pin-numbers to control
         :param frequency: Frequency in Hz (<100)
         :param duty_cycle: Duty cycle (0 - 1)
         """
