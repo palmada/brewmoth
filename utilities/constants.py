@@ -12,6 +12,7 @@ CFG_BREWFATHER = 'Brewfather'
 CFG_WRITE_TO_DISK = 'Write to disk'
 CFG_SENSORS = 'Temperature sensors'
 CFG_SENSOR_SERIAL = 'Serial Number'
+CFG_FAN_SPEED = 'Fan speed'
 
 SENSOR_TYPE_MAIN = 'Main'
 SENSOR_TYPE_ROOM = 'Room'

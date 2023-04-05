@@ -56,7 +56,11 @@ class Thermostat:
         with open(SET_POINT_FILE, 'r') as set_point_file:
             settings = json.load(set_point_file)
 
+        if CFG_FAN_SPEED not in config:
+            config[CFG_FAN_SPEED] = 0.4
+
         self.config = config
+        self.fan_speed = config[CFG_FAN_SPEED]
 
         check_sensor_types_are_present(config, SENSOR_TYPE_MAIN)
 
@@ -97,7 +101,7 @@ class Thermostat:
             journal.write("Thermostat control turned off")
         else:
             journal.write("Thermostat control turned on")
-            set_fan_speed(0.4)
+            set_fan_speed(self.fan_speed)
 
     def kill(self):
         journal.write("Thermostat will get killed")

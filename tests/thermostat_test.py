@@ -19,11 +19,13 @@ if __name__ == '__main__':
     parser.add_argument('--temperature', '-t', help='Target temperature', default=15)
     parser.add_argument('--tolerance', '-to', help='Allowed temperature deviation', default=0.10)
     parser.add_argument('--sampling', '-s', help='How often to sample', default=5)
+    parser.add_argument('--fan_speed', '-f', help='Fan speed to use during test', default=0.4)
 
     args = parser.parse_args()
     target_temp = float(args.temperature)
     sampling = float(args.sampling)
     tolerance = float(args.tolerance)
+    fan_speed = float(args.fan_speed)
 
     os.system('modprobe w1-gpio')
     os.system('modprobe w1-therm')
@@ -40,7 +42,7 @@ if __name__ == '__main__':
     peltier_control = SoftwarePeltierDirectControl()
     previous_state = SoftwarePeltierDirectControl.State.OFF
 
-    set_fan_speed(0.4)
+    set_fan_speed(fan_speed)
 
     with open(CONFIG_FILE, 'r') as config_file:
         config_data = json.loads(config_file.read())

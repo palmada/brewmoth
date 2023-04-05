@@ -4,5 +4,6 @@
         {"Name": "Temperature", "Serial Number": "28-3c01b5562b43", "Type": "Main"},
         {"Name": "Room Temperature", "Serial Number": "28-3c034562b42", "Type": "Room"}
   ],
-  "Brewfather": true
+  "Brewfather": true,
+  "Fan speed": 0.4
 }
