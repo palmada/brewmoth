@@ -148,7 +148,7 @@ def get_temp_point(first_set_point: SetPoint, second_set_point: SetPoint, time_s
     time_to_previous = time_difference(first_set_point, time_stamp)
 
     # If we found a time range where our current time point fits
-    if time_to_next < 0 and time_to_previous > 0:
+    if time_to_next < 0 < time_to_previous:
         if second_set_point.type is SetPointType.RAMP:
             ramp_time = time_to_previous - time_to_next
 
@@ -191,7 +191,7 @@ def get_temp_for_time(set_points: List[SetPoint], current_time: datetime):
             time_to_previous = time_difference(previous_set_point, current_time)
 
             # If we found a time range where our current time point fits
-            if time_to_next < 0 and time_to_previous > 0:
+            if time_to_next < 0 < time_to_previous:
                 target_temp = get_temp_point(previous_set_point, next_set_point, current_time)
                 break
 
