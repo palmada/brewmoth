@@ -22,9 +22,6 @@ class SoftwarePeltierDirectControl:
         COOL = -1
         OFF = 0
 
-    def __init__(self, control_fans: bool):
-        self.set_fans = control_fans
-
     def stop(self):
         """
         Turns off peltiers.
@@ -34,9 +31,6 @@ class SoftwarePeltierDirectControl:
 
         for pin in self.heating_pin_numbers:
             pin_control.write(pin, 0)
-
-        if self.set_fans:
-            set_fan_speed(0)
 
     def set_state(self, state: State):
         """
@@ -48,9 +42,6 @@ class SoftwarePeltierDirectControl:
         if state is self.State.OFF:
             self.stop()
         else:
-            if self.set_fans:
-                set_fan_speed(0.4)
-
             if state is self.State.HEAT:
                 for pin in self.cooling_pin_numbers:
                     pin_control.write(pin, 0)
@@ -118,8 +109,6 @@ class SoftwarePeltierPWMControl:
         if duty_cycle is 0:
             self.stop()
             return
-        else:
-            set_fan_speed(0.4)
 
         if heat:
             self.cooling_pins_control.duty_cycle = 0

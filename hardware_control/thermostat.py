@@ -70,7 +70,7 @@ class Thermostat:
         self.sampling = settings[SP_SAMPLING]  # Seconds
         self.alive = True
         self.on = False
-        self.peltier_control = SoftwarePeltierDirectControl(control_fans=False)
+        self.peltier_control = SoftwarePeltierDirectControl()
         self.set_state(False)  # Always best to ensure we start with everything off
         self.previous_state = SoftwarePeltierDirectControl.State.OFF
 

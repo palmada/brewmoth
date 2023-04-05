@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     file = open(os.path.join(READS_FOLDER, timestamp() + ".pid.csv"), "w")
 
-    peltier_control = SoftwarePeltierDirectControl(False)
+    peltier_control = SoftwarePeltierDirectControl()
     previous_state = SoftwarePeltierDirectControl.State.OFF
 
     set_fan_speed(0.4)
