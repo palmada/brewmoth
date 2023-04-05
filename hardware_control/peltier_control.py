@@ -120,7 +120,7 @@ class SoftwarePeltierPWMControl:
 
 # Hardware PWM constants
 pwm_range = 40000  # For our 25kHz PWM signal, the period is 40000 nanoseconds
-frequency = 10  # Hz
+pwm_frequency = 10  # Hz
 
 
 def set_hw_pwm_peltier_control(power):
@@ -144,10 +144,10 @@ def set_hw_pwm_peltier_control(power):
     pin_control.set_PWM_range(SoftwarePeltierPWMControl.heating_pin_numbers[0], pwm_range)
     pin_control.set_PWM_range(SoftwarePeltierPWMControl.heating_pin_numbers[1], pwm_range)
 
-    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.cooling_pin_numbers[0], frequency)
-    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.cooling_pin_numbers[1], frequency)
-    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.heating_pin_numbers[0], frequency)
-    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.heating_pin_numbers[1], frequency)
+    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.cooling_pin_numbers[0], pwm_frequency)
+    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.cooling_pin_numbers[1], pwm_frequency)
+    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.heating_pin_numbers[0], pwm_frequency)
+    pin_control.set_PWM_frequency(SoftwarePeltierPWMControl.heating_pin_numbers[1], pwm_frequency)
 
     if power == 0:
         pin_control.set_PWM_dutycycle(SoftwarePeltierPWMControl.cooling_pin_numbers[0], 0)
